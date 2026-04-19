@@ -1,4 +1,4 @@
-.PHONY: venv install dev up down test lint typecheck migrate shell
+.PHONY: venv install dev up down test lint fmt typecheck migrate shell
 
 VENV := .venv
 PYTHON := $(VENV)/bin/python
