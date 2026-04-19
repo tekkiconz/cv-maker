@@ -9,4 +9,6 @@ services:
       - ./assets/templates:/app/assets/templates
       - ./assets/outputs:/app/assets/outputs
       - ./app:/app/app
+      - ./alembic.ini:/app/alembic.ini
+      - ./migrations:/app/migrations
     depends_on: []
