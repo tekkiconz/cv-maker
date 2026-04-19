@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class ContactType(str, Enum):
+class ContactType(StrEnum):
     email = "email"
     phone = "phone"
     github = "github"
