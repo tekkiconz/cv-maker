@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./assets/templates:/app/assets/templates
+      - ./assets/outputs:/app/assets/outputs
+      - ./app:/app/app
+    depends_on: []

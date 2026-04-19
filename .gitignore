@@ -1,0 +1,29 @@
+# Environment
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Mypy / Ruff cache
+.mypy_cache/
+.ruff_cache/
+
+# Pytest
+.pytest_cache/
+
+# Assets (generated outputs, not source templates)
+assets/outputs/
+assets/storage/
+
+# DB file
+*.db
+
+# OS
+.DS_Store
