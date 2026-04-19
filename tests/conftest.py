@@ -38,8 +38,10 @@ async def http_client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, N
         return ProfileService(adapter)
 
     app.dependency_overrides[get_profile_service] = override_profile_service
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as client:
-        yield client
-    app.dependency_overrides.clear()
+    try:
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            yield client
+    finally:
+        app.dependency_overrides.clear()
