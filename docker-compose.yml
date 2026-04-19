@@ -11,4 +11,5 @@ services:
       - ./app:/app/app
       - ./alembic.ini:/app/alembic.ini
       - ./migrations:/app/migrations
+      - ./tests:/app/tests
     depends_on: []
