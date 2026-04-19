@@ -27,3 +27,6 @@ assets/storage/
 
 # OS
 .DS_Store
+
+# Superpowers plans (local dev artifacts)
+docs/superpowers/
