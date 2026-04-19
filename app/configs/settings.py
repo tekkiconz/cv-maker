@@ -10,4 +10,4 @@ class Settings(BaseSettings):
     model_config = {"env_file": ".env"}
 
 
-settings = Settings()  # type: ignore[call-arg]
+settings = Settings()  # type: ignore[call-arg]  # pydantic-settings populates fields from env at runtime; mypy cannot see this
