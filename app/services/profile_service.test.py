@@ -35,7 +35,7 @@ def fake_db() -> FakeProfileRepository:
 
 @pytest.fixture
 def service(fake_db: FakeProfileRepository) -> ProfileService:
-    return ProfileService(fake_db)  # type: ignore[arg-type]
+    return ProfileService(fake_db)  # type: ignore[arg-type]  # TYPE_CHECKING guard on ProfileRepositoryProtocol prevents mypy from resolving structural match
 
 
 async def test_create_profile_returns_profile_with_id(service: ProfileService) -> None:
@@ -56,6 +56,12 @@ async def test_create_profile_description_optional(service: ProfileService) -> N
 async def test_list_profiles_empty(service: ProfileService) -> None:
     results = await service.list_profiles()
     assert results == []
+
+
+async def test_create_profile_empty_name_raises(service: ProfileService) -> None:
+    data = ProfileCreate.model_construct(name="")  # bypass Pydantic validation to hit service assertion
+    with pytest.raises(AssertionError, match="profile name must not be empty"):
+        await service.create_profile(data)
 
 
 async def test_list_profiles_returns_all_created(service: ProfileService) -> None:
