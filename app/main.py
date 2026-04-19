@@ -4,12 +4,14 @@ import aiosqlite
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from app.apis.profiles import router as profiles_router
 from app.apis.sections import sections_router
 from app.configs.settings import settings
 
 app = FastAPI(title="CVMaker")
 
 app.include_router(sections_router)
+app.include_router(profiles_router)
 
 
 @app.get("/health")
