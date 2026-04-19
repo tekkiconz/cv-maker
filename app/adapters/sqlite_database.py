@@ -39,5 +39,6 @@ class SQLiteDatabaseAdapter:
     async def list_profiles(self) -> list[ProfileRead]:
         result = await self._session.execute(select(Profile))
         profiles = list(result.scalars().all())
-        assert isinstance(profiles, list), "fetch returned non-list"
-        return [ProfileRead.model_validate(p) for p in profiles]
+        validated = [ProfileRead.model_validate(p) for p in profiles]
+        assert all(p.id is not None for p in validated), "one or more profiles missing id"
+        return validated

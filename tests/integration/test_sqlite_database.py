@@ -1,3 +1,5 @@
+from collections.abc import AsyncGenerator
+
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
@@ -7,7 +9,7 @@ from app.schemas.profile import ProfileCreate
 
 
 @pytest.fixture
-async def session() -> AsyncSession:
+async def session() -> AsyncGenerator[AsyncSession, None]:
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -22,6 +24,7 @@ async def test_create_profile_returns_id(session: AsyncSession) -> None:
     result = await adapter.create_profile(ProfileCreate(name="Alice", description="Engineer"))
     assert result.id is not None
     assert result.name == "Alice"
+    assert result.description == "Engineer"
 
 
 async def test_list_profiles_empty(session: AsyncSession) -> None:
@@ -36,3 +39,5 @@ async def test_list_profiles_returns_all(session: AsyncSession) -> None:
     await adapter.create_profile(ProfileCreate(name="Bob"))
     results = await adapter.list_profiles()
     assert len(results) == 2
+    names = {r.name for r in results}
+    assert names == {"Alice", "Bob"}
