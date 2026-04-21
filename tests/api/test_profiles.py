@@ -47,3 +47,8 @@ async def test_list_profiles_returns_all_created(http_client: AsyncClient) -> No
     assert len(profiles) == 2
     names = {p["name"] for p in profiles}
     assert names == {"Alice", "Bob"}
+
+
+async def test_create_profile_whitespace_name_returns_422(http_client: AsyncClient) -> None:
+    response = await http_client.post("/api/profiles", json={"name": "   "})
+    assert response.status_code == 422
