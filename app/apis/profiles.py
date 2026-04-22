@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 
 from app.apis.dependencies import get_profile_service
-from app.schemas.profile import ProfileCreate, ProfileRead
+from app.schemas.profile import ProfileCreate, ProfileList, ProfileRead
 from app.services.profile_service import ProfileService
 
 router = APIRouter(prefix="/api/profiles", tags=["profiles"])
@@ -17,8 +17,8 @@ async def create_profile(
     return await service.create_profile(data)
 
 
-@router.get("", response_model=list[ProfileRead])
+@router.get("", response_model=ProfileList)
 async def list_profiles(
     service: Annotated[ProfileService, Depends(get_profile_service)],
-) -> list[ProfileRead]:
+) -> ProfileList:
     return await service.list_profiles()

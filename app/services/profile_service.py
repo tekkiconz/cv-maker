@@ -7,7 +7,7 @@ class ProfileService:
         self._db = db
 
     async def create_profile(self, data: ProfileCreate) -> ProfileRead:
-        assert data.name, "profile name must not be empty"
+        assert data.name.strip(), "profile name must not be empty"
         result = await self._db.create_profile(data)
         assert result.id is not None, "inserted profile has no id"
         return result
