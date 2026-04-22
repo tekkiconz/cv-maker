@@ -55,6 +55,9 @@ async def test_create_profile_rolls_back_on_commit_failure(session: AsyncSession
     ):
         await adapter.create_profile(ProfileCreate(name="Fail"))
 
-    # session still usable after rollback
+    # session still usable after rollback — verify with both read and write
     result = await adapter.list_profiles()
     assert result == []
+    recovery = await adapter.create_profile(ProfileCreate(name="Recovery"))
+    assert recovery.id is not None
+    assert recovery.name == "Recovery"
