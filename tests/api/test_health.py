@@ -33,6 +33,9 @@ async def test_health_latex_timeout_returns_503(monkeypatch: pytest.MonkeyPatch)
     from unittest.mock import MagicMock
 
     async def fake_wait_for(coro: object, timeout: float) -> None:
+        import inspect
+        if inspect.iscoroutine(coro):
+            coro.close()
         raise TimeoutError
 
     mock_proc = MagicMock()
