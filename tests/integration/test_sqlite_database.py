@@ -1,6 +1,8 @@
 from collections.abc import AsyncGenerator
+from unittest.mock import AsyncMock, patch
 
 import pytest
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.adapters.sqlite_database import SQLiteDatabaseAdapter
@@ -9,7 +11,7 @@ from app.schemas.profile import ProfileCreate
 
 
 @pytest.fixture
-async def session() -> AsyncGenerator[AsyncSession, None]:
+async def session() -> AsyncGenerator[AsyncSession]:
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -41,3 +43,18 @@ async def test_list_profiles_returns_all(session: AsyncSession) -> None:
     assert len(results) == 2
     names = {r.name for r in results}
     assert names == {"Alice", "Bob"}
+
+
+async def test_create_profile_rolls_back_on_commit_failure(session: AsyncSession) -> None:
+    adapter = SQLiteDatabaseAdapter(session)
+
+    error = SQLAlchemyError("forced")
+    with (
+        patch.object(session, "commit", new_callable=AsyncMock, side_effect=error),
+        pytest.raises(SQLAlchemyError),
+    ):
+        await adapter.create_profile(ProfileCreate(name="Fail"))
+
+    # session still usable after rollback
+    result = await adapter.list_profiles()
+    assert result == []

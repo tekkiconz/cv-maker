@@ -18,20 +18,24 @@ class SQLiteDatabaseAdapter:
         pass
 
     async def execute(self, statement: Any) -> Any:
-        return await self._session.execute(statement)  # type: ignore[arg-type]
+        return await self._session.execute(statement)
 
     async def fetch_one(self, statement: Any) -> Any | None:
-        result = await self._session.execute(statement)  # type: ignore[arg-type]
+        result = await self._session.execute(statement)
         return result.scalar_one_or_none()
 
     async def fetch_all(self, statement: Any) -> list[Any]:
-        result = await self._session.execute(statement)  # type: ignore[arg-type]
+        result = await self._session.execute(statement)
         return list(result.scalars().all())
 
     async def create_profile(self, data: ProfileCreate) -> ProfileRead:
         profile = Profile(name=data.name, description=data.description)
         self._session.add(profile)
-        await self._session.commit()
+        try:
+            await self._session.commit()
+        except Exception:
+            await self._session.rollback()
+            raise
         await self._session.refresh(profile)
         assert profile.id is not None, "DB did not assign an id after insert"
         return ProfileRead.model_validate(profile)
@@ -39,6 +43,4 @@ class SQLiteDatabaseAdapter:
     async def list_profiles(self) -> list[ProfileRead]:
         result = await self._session.execute(select(Profile))
         profiles = list(result.scalars().all())
-        validated = [ProfileRead.model_validate(p) for p in profiles]
-        assert all(p.id is not None for p in validated), "one or more profiles missing id"
-        return validated
+        return [ProfileRead.model_validate(p) for p in profiles]
