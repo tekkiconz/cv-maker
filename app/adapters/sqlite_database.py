@@ -91,7 +91,7 @@ class SQLiteDatabaseAdapter:
         )
         count = len(list(existing.scalars().all()))
         assert count < MAX_CONTACTS_PER_PROFILE, (
-            f"profile {profile_id} already has {MAX_CONTACTS_PER_PROFILE} contacts"
+            f"profile {profile_id} has {count} contacts; max {MAX_CONTACTS_PER_PROFILE} allowed"
         )
         contact = ProfileContact(
             profile_id=profile_id,
@@ -105,6 +105,7 @@ class SQLiteDatabaseAdapter:
             await self._session.rollback()
             raise
         await self._session.refresh(contact)
+        assert contact.id is not None, "DB did not assign an id after insert"
         return ContactRead.model_validate(contact)
 
     async def list_contacts(self, profile_id: int) -> list[ContactRead]:
