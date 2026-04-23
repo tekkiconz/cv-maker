@@ -15,7 +15,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 ## Technology Stack & Versions
 
-- **Python** 3.12+
+- **Python** 3.14+
 - **FastAPI** (latest stable) — async, OpenAPI auto-generated
 - **SQLAlchemy** 2.x (async engine, `AsyncSession`)
 - **Alembic** — schema-first migrations
@@ -182,4 +182,4 @@ for i, path in enumerate(template_dir.iterdir()):
 
 **For Humans:** Keep this lean. Update when the stack or patterns change. Remove rules that become obvious over time.
 
-_Last Updated: 2026-04-18_
+_Last Updated: 2026-04-21_

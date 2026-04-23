@@ -71,7 +71,7 @@ docker compose up --build
 
 **Architectural Decisions Established:**
 
-**Language & Runtime:** Python 3.12+, async via FastAPI/uvicorn
+**Language & Runtime:** Python 3.14+, async via FastAPI/uvicorn
 
 **Web Framework:** FastAPI — chosen for OpenAPI auto-generation (REST API is the sole entry point per PRD), Pydantic validation, and async-native design.
 
@@ -617,7 +617,7 @@ Request → apis/ → controllers/ → services/ → adapters/ → DB/filesystem
 
 ### Coherence Validation ✅
 
-**Decision Compatibility:** Python 3.12 + FastAPI + SQLAlchemy 2.x async + Alembic + HTMX + Jinja2 + pdflatex in Docker — all compatible, no version conflicts. Protocol interfaces compose cleanly with FastAPI `Depends()`.
+**Decision Compatibility:** Python 3.14 + FastAPI + SQLAlchemy 2.x async + Alembic + HTMX + Jinja2 + pdflatex in Docker — all compatible, no version conflicts. Protocol interfaces compose cleanly with FastAPI `Depends()`.
 
 **Pattern Consistency:** snake_case throughout, single `Base` in `models/base.py`, single env reader in `configs/settings.py`, single `HX-Request` check in controllers — all consistent and non-conflicting.
 
