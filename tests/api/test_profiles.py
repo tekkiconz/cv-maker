@@ -147,6 +147,7 @@ async def test_delete_profile_not_found_returns_404(http_client: AsyncClient) ->
 
 async def test_delete_profile_then_get_returns_404(http_client: AsyncClient) -> None:
     r = await http_client.post("/api/profiles", json={"name": "Alice"})
+    assert r.status_code == 201
     profile_id = r.json()["id"]
 
     delete_r = await http_client.delete(f"/api/profiles/{profile_id}")
