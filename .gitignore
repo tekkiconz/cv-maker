@@ -30,3 +30,6 @@ assets/storage/
 
 # Superpowers plans (local dev artifacts)
 docs/superpowers/
+
+# Git worktrees
+.worktrees/
