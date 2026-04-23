@@ -21,7 +21,9 @@ async def test_create_contact_returns_201(http_client: AsyncClient) -> None:
 async def test_list_contacts_returns_200(http_client: AsyncClient) -> None:
     profile_r = await http_client.post("/api/profiles", json={"name": "Alice"})
     pid = profile_r.json()["id"]
-    await http_client.post(f"/api/profiles/{pid}/contacts", json={"type": "email", "value": "a@b.com"})
+    await http_client.post(
+        f"/api/profiles/{pid}/contacts", json={"type": "email", "value": "a@b.com"}
+    )
     await http_client.post(f"/api/profiles/{pid}/contacts", json={"type": "phone", "value": "123"})
 
     response = await http_client.get(f"/api/profiles/{pid}/contacts")

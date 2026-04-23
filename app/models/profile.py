@@ -25,7 +25,7 @@ class Profile(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow, onupdate=_utcnow, nullable=False
     )
-    contacts: Mapped[list["ProfileContact"]] = relationship(
+    contacts: Mapped[list[ProfileContact]] = relationship(
         "ProfileContact", cascade="all, delete-orphan", back_populates="profile"
     )
 
@@ -38,4 +38,4 @@ class ProfileContact(Base):
     type: Mapped[str] = mapped_column(String(50), nullable=False)
     value: Mapped[str] = mapped_column(String(500), nullable=False)
 
-    profile: Mapped["Profile"] = relationship("Profile", back_populates="contacts")
+    profile: Mapped[Profile] = relationship("Profile", back_populates="contacts")

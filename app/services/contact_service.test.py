@@ -95,7 +95,9 @@ async def test_list_contacts_scoped_to_profile(service: ContactService) -> None:
 
 
 async def test_get_contact(service: ContactService) -> None:
-    created = await service.create_contact(1, ContactCreate(type=ContactType.email, value="a@b.com"))
+    created = await service.create_contact(
+        1, ContactCreate(type=ContactType.email, value="a@b.com")
+    )
     result = await service.get_contact(1, created.id)
     assert result.id == created.id
 
@@ -119,7 +121,9 @@ async def test_update_contact_not_found_raises(service: ContactService) -> None:
 
 
 async def test_delete_contact(service: ContactService) -> None:
-    created = await service.create_contact(1, ContactCreate(type=ContactType.email, value="a@b.com"))
+    created = await service.create_contact(
+        1, ContactCreate(type=ContactType.email, value="a@b.com")
+    )
     await service.delete_contact(1, created.id)
     with pytest.raises(ValueError, match=f"Contact {created.id} not found"):
         await service.get_contact(1, created.id)
