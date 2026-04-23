@@ -32,3 +32,11 @@ class ProfileService:
             raise ValueError(f"Profile {profile_id} not found")
         assert result.updated_at >= result.created_at, "updated_at must not precede created_at"
         return result
+
+    async def delete_profile(self, profile_id: int) -> None:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        deleted = await self._db.delete_profile(profile_id)
+        if not deleted:
+            raise ValueError(f"Profile {profile_id} not found")
+        gone = await self._db.get_profile(profile_id)
+        assert gone is None, "profile still exists after delete — db invariant violated"
