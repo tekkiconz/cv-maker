@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Response, status
 
 from app.apis.dependencies import get_profile_service
 from app.schemas.profile import ProfileCreate, ProfileList, ProfileRead, ProfileUpdate
@@ -51,3 +51,18 @@ async def update_profile(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Profile not found",
         ) from None
+
+
+@router.delete("/{profile_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_profile(
+    profile_id: Annotated[int, Path(ge=1)],
+    service: Annotated[ProfileService, Depends(get_profile_service)],
+) -> Response:
+    try:
+        await service.delete_profile(profile_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Profile not found",
+        ) from None
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
