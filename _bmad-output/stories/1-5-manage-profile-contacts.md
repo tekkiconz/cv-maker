@@ -308,11 +308,18 @@ N/A
 ### Completion Notes List
 
 - All 10 tasks + final validation complete on branch `feature/manage-profile-contacts`
-- 76 tests passing (15 unit + 13 API integration + remainder existing)
+- 81 tests passing (18 unit + 15 API integration + remainder existing)
 - Lint clean (`ruff check` + `ruff format --check`)
 - Alembic migration `a0726fa39315` chains after `996822aeacfb` (profiles table)
 - Tiger Style assertions on all service methods (pre + postconditions)
 - `ProfileContact` model co-located in `app/models/profile.py` with cascade delete
+- ✅ Resolved review finding [Patch]: assert → ValueError for MAX_CONTACTS_PER_PROFILE limit
+- ✅ Resolved review finding [Patch]: filter None from update_dict to prevent NULL writes to NOT NULL column
+- ✅ Resolved review finding [Patch]: added profile_exists guard to get/update/delete_contact in service + 3 new unit tests
+- ✅ Resolved review finding [Patch]: migration FK ondelete=CASCADE added
+- ✅ Resolved review finding [Patch]: ContactValue max_length=500 added
+- ✅ Resolved review finding [Patch]: added PATCH/DELETE nonexistent profile_id integration tests (2 new)
+- ✅ Resolved review finding [Patch]: removed redundant assert data.type in ContactType check
 
 ### File List
 
@@ -328,3 +335,18 @@ N/A
 - `migrations/versions/a0726fa39315_create_profile_contacts_table.py` — new migration
 - `tests/api/test_contacts.py` — new: 13 integration tests
 - `tests/conftest.py` — added `override_contact_service` to `http_client` fixture
+
+### Review Findings
+
+- [x] [Review][Patch] Limit check uses `assert` instead of raising `ValueError` → unhandled 500 when profile hits MAX_CONTACTS_PER_PROFILE [`app/adapters/sqlite_database.py` create_contact]
+- [x] [Review][Patch] `PATCH {"value": null}` sends None to a NOT NULL column → DB error; `ContactUpdate.value: ContactValue | None = None` allows explicit null through `model_dump(exclude_unset=True)` [`app/schemas/contact.py`, `app/adapters/sqlite_database.py`]
+- [x] [Review][Patch] `update_contact`, `delete_contact`, `get_contact` skip `profile_exists` check → nonexistent profile returns wrong 404 detail ("Contact not found" instead of "Profile not found"); asymmetric with `create_contact`/`list_contacts` [`app/services/contact_service.py`]
+- [x] [Review][Patch] Migration FK missing `ondelete="CASCADE"` — ORM cascade works but raw SQL deletes orphan `profile_contacts` rows [`migrations/versions/a0726fa39315_create_profile_contacts_table.py`]
+- [x] [Review][Patch] `ContactValue` missing `max_length=500` — values over 500 chars pass Pydantic but exceed the DB column bound [`app/schemas/contact.py`]
+- [x] [Review][Patch] No integration tests for PATCH/DELETE with nonexistent `profile_id` → AC 7 partially uncovered [`tests/api/test_contacts.py`]
+- [x] [Review][Patch] Redundant `assert data.type in ContactType.__members__.values()` — Pydantic already validated this before service is called [`app/services/contact_service.py`]
+- [x] [Review][Defer] TOCTOU race on contact count check — mitigated by SQLite write serialization; fix requires SELECT FOR UPDATE or DB constraint out of scope [`app/adapters/sqlite_database.py`] — deferred, pre-existing
+- [x] [Review][Defer] `ContactRead.model_validate` has no try/except — corrupt enum value in DB causes uncaught ValidationError; pre-existing pattern in codebase [`app/adapters/sqlite_database.py`] — deferred, pre-existing
+- [x] [Review][Defer] No pagination on `list_contacts` — capped by `MAX_CONTACTS_PER_PROFILE=20`; pagination is an Epic 2+ concern [`app/adapters/sqlite_database.py`] — deferred, pre-existing
+- [x] [Review][Defer] DB exceptions from `profile_exists` not caught — OperationalError propagates as 500; pre-existing pattern for all DB operations [`app/services/contact_service.py`] — deferred, pre-existing
+- [x] [Review][Defer] Write-time assertion gap: adapter `create_contact` does not assert `contact.type` round-trips as valid `ContactType` after commit [`app/adapters/sqlite_database.py`] — deferred, pre-existing

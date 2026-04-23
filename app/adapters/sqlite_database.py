@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.constants.limits import MAX_CONTACTS_PER_PROFILE
+from app.exceptions import ContactLimitExceededError
 from app.models.profile import Profile, ProfileContact
 from app.schemas.contact import ContactCreate, ContactRead, ContactUpdate
 from app.schemas.profile import ProfileCreate, ProfileRead, ProfileUpdate
@@ -90,9 +91,10 @@ class SQLiteDatabaseAdapter:
             select(ProfileContact).where(ProfileContact.profile_id == profile_id)
         )
         count = len(list(existing.scalars().all()))
-        assert count < MAX_CONTACTS_PER_PROFILE, (
-            f"profile {profile_id} has {count} contacts; max {MAX_CONTACTS_PER_PROFILE} allowed"
-        )
+        if count >= MAX_CONTACTS_PER_PROFILE:
+            raise ContactLimitExceededError(
+                f"profile {profile_id} has {count} contacts; max {MAX_CONTACTS_PER_PROFILE} allowed"
+            )
         contact = ProfileContact(
             profile_id=profile_id,
             type=data.type,
@@ -139,7 +141,9 @@ class SQLiteDatabaseAdapter:
         contact = result.scalar_one_or_none()
         if contact is None:
             return None
-        update_dict = data.model_dump(exclude_unset=True)
+        update_dict = {
+            k: v for k, v in data.model_dump(exclude_unset=True).items() if v is not None
+        }
         for key, value in update_dict.items():
             setattr(contact, key, value)
         try:

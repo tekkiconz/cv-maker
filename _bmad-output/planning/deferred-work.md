@@ -13,3 +13,11 @@
 ## Deferred from: code review of 1-3-edit-profile-details (2026-04-23)
 
 - **De1: Empty PATCH body (`{}`) skips write and `updated_at` refresh** [`app/adapters/sqlite_database.py`] — When `ProfileUpdate` has no fields set, the adapter returns the existing record without issuing any UPDATE statement. `updated_at` is not refreshed and the caller cannot distinguish a real update from a no-op. Spec does not cover this edge case; acceptable for now but may need a dedicated response shape or HTTP 204 in a future story.
+
+## Deferred from: code review of 1-5-manage-profile-contacts (2026-04-24)
+
+- **De1: TOCTOU race on contact count check** [`app/adapters/sqlite_database.py` create_contact] — `SELECT COUNT` then `INSERT` with no locking. SQLite write serialization mitigates in practice; fix requires `SELECT FOR UPDATE` or DB-level unique constraint, out of scope for this story.
+- **De2: `ContactRead.model_validate` no exception handling** [`app/adapters/sqlite_database.py`] — A corrupt or legacy DB row with an invalid `type` string causes an uncaught Pydantic `ValidationError` during list/get operations. Pre-existing pattern for all `model_validate` calls in the codebase; needs a global error handling story.
+- **De3: No pagination on `list_contacts`** [`app/adapters/sqlite_database.py`] — `SELECT` with no `LIMIT`; bounded by `MAX_CONTACTS_PER_PROFILE=20` today. Pagination is an Epic 2+ concern.
+- **De4: DB exceptions from `profile_exists` propagate as unhandled 500** [`app/services/contact_service.py`] — `OperationalError` (DB locked, connection lost) is not caught; same pre-existing pattern as De3 from story 1-2. Needs global exception handler story.
+- **De5: Write-time assertion gap for enum type round-trip** [`app/adapters/sqlite_database.py` create_contact] — Adapter postcondition asserts `contact.id is not None` but not that `contact.type` persisted correctly as a valid `ContactType` value. Latent risk; actual StrEnum-to-string storage is correct today.

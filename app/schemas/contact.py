@@ -6,7 +6,7 @@ from app.constants.enums import ContactType
 
 ContactValue = Annotated[
     str,
-    StringConstraints(strip_whitespace=True, min_length=1),
+    StringConstraints(strip_whitespace=True, min_length=1, max_length=500),
 ]
 
 

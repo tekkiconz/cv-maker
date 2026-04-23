@@ -1,0 +1,2 @@
+class ContactLimitExceededError(ValueError):
+    pass

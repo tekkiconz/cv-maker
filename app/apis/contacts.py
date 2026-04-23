@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Path, Response, status
 
 from app.apis.dependencies import get_contact_service
+from app.exceptions import ContactLimitExceededError
 from app.schemas.contact import ContactCreate, ContactRead, ContactUpdate
 from app.services.contact_service import ContactService
 
@@ -17,6 +18,11 @@ async def create_contact(
 ) -> ContactRead:
     try:
         return await service.create_contact(profile_id, data)
+    except ContactLimitExceededError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=str(exc),
+        ) from None
     except ValueError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

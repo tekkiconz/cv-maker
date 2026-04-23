@@ -144,6 +144,21 @@ async def test_list_contacts_profile_not_found_raises(service: ContactService) -
         await service.list_contacts(99)
 
 
+async def test_get_contact_profile_not_found_raises(service: ContactService) -> None:
+    with pytest.raises(ValueError, match="Profile 99 not found"):
+        await service.get_contact(99, 1)
+
+
+async def test_update_contact_profile_not_found_raises(service: ContactService) -> None:
+    with pytest.raises(ValueError, match="Profile 99 not found"):
+        await service.update_contact(99, 1, ContactUpdate(value="x@y.com"))
+
+
+async def test_delete_contact_profile_not_found_raises(service: ContactService) -> None:
+    with pytest.raises(ValueError, match="Profile 99 not found"):
+        await service.delete_contact(99, 1)
+
+
 async def test_tiger_style_create_profile_id_zero_raises(service: ContactService) -> None:
     with pytest.raises(AssertionError):
         await service.create_contact(0, ContactCreate(type=ContactType.email, value="a@b.com"))

@@ -1,4 +1,3 @@
-from app.constants.enums import ContactType
 from app.interfaces.database import ContactRepositoryProtocol
 from app.schemas.contact import ContactCreate, ContactRead, ContactUpdate
 
@@ -9,7 +8,6 @@ class ContactService:
 
     async def create_contact(self, profile_id: int, data: ContactCreate) -> ContactRead:
         assert profile_id > 0, "profile_id must be a positive integer"
-        assert data.type in ContactType.__members__.values(), f"invalid ContactType: {data.type}"
         if not await self._db.profile_exists(profile_id):
             raise ValueError(f"Profile {profile_id} not found")
         result = await self._db.create_contact(profile_id, data)
@@ -27,6 +25,8 @@ class ContactService:
     async def get_contact(self, profile_id: int, contact_id: int) -> ContactRead:
         assert profile_id > 0, "profile_id must be a positive integer"
         assert contact_id > 0, "contact_id must be a positive integer"
+        if not await self._db.profile_exists(profile_id):
+            raise ValueError(f"Profile {profile_id} not found")
         result = await self._db.get_contact(profile_id, contact_id)
         if result is None:
             raise ValueError(f"Contact {contact_id} not found")
@@ -37,6 +37,8 @@ class ContactService:
     ) -> ContactRead:
         assert profile_id > 0, "profile_id must be a positive integer"
         assert contact_id > 0, "contact_id must be a positive integer"
+        if not await self._db.profile_exists(profile_id):
+            raise ValueError(f"Profile {profile_id} not found")
         result = await self._db.update_contact(profile_id, contact_id, data)
         if result is None:
             raise ValueError(f"Contact {contact_id} not found")
@@ -45,6 +47,8 @@ class ContactService:
     async def delete_contact(self, profile_id: int, contact_id: int) -> None:
         assert profile_id > 0, "profile_id must be a positive integer"
         assert contact_id > 0, "contact_id must be a positive integer"
+        if not await self._db.profile_exists(profile_id):
+            raise ValueError(f"Profile {profile_id} not found")
         deleted = await self._db.delete_contact(profile_id, contact_id)
         if not deleted:
             raise ValueError(f"Contact {contact_id} not found")
