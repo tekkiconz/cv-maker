@@ -27,12 +27,18 @@ async def health() -> JSONResponse:
             status_code=503,
         )
 
-    proc = await asyncio.create_subprocess_exec(
-        "pdflatex",
-        "--version",
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "pdflatex",
+            "--version",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+    except FileNotFoundError:
+        return JSONResponse(
+            content={"status": "error", "latex": "not_found"},
+            status_code=503,
+        )
     try:
         await asyncio.wait_for(proc.communicate(), timeout=PDFLATEX_HEALTH_CHECK_TIMEOUT_SECONDS)
     except TimeoutError:
