@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.profile import Profile
-from app.schemas.profile import ProfileCreate, ProfileRead
+from app.schemas.profile import ProfileCreate, ProfileRead, ProfileUpdate
 
 
 class SQLiteDatabaseAdapter:
@@ -46,3 +46,24 @@ class SQLiteDatabaseAdapter:
         validated = [ProfileRead.model_validate(p) for p in profiles]
         assert isinstance(validated, list), "list_profiles must return a list"
         return validated
+
+    async def get_profile(self, profile_id: int) -> ProfileRead | None:
+        profile = await self._session.get(Profile, profile_id)
+        if profile is None:
+            return None
+        return ProfileRead.model_validate(profile)
+
+    async def update_profile(self, profile_id: int, data: ProfileUpdate) -> ProfileRead | None:
+        profile = await self._session.get(Profile, profile_id)
+        if profile is None:
+            return None
+        update_dict = data.model_dump(exclude_unset=True)
+        for key, value in update_dict.items():
+            setattr(profile, key, value)
+        try:
+            await self._session.commit()
+        except Exception:
+            await self._session.rollback()
+            raise
+        await self._session.refresh(profile)
+        return ProfileRead.model_validate(profile)
