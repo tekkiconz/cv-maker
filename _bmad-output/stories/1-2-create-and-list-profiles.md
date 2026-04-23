@@ -217,3 +217,14 @@ claude-sonnet-4-6
 - [x] [Review][Defer] De1: Global engine instantiated at import time [app/apis/dependencies.py:11-12] — deferred, pre-existing design tradeoff; tests use dependency overrides to bypass
 - [x] [Review][Defer] De2: `MAX_PROFILES` limit not enforced anywhere [app/services/profile_service.py, app/adapters/sqlite_database.py] — deferred, future story scope; constant defined but no story requires enforcement yet
 - [x] [Review][Defer] De3: `OperationalError` from DB propagates as unstructured 500 [app/adapters/sqlite_database.py:20-27] — deferred, cross-cutting error handling concern; not in scope for this story
+
+## Review Findings — Round 2 (2026-04-23)
+
+### Patches
+
+- [x] [Review][Patch] P1: `FileNotFoundError` from missing pdflatex propagates as 500 not 503 [app/main.py:30] — RESOLVED: wrap `create_subprocess_exec` in `except FileNotFoundError`, return 503
+- [x] [Review][Patch] P2: Vacuous `isinstance(results, list)` assert — dismissed; kept as Tiger Style defense against CPython surprises
+
+### Deferred
+
+- [x] [Review][Defer] De1: Dead `DatabaseProtocol` generic methods (connect, disconnect, execute, fetch_one, fetch_all) defined but never called by any service [app/adapters/sqlite_database.py:14-29, app/interfaces/database.py:11-19] — deferred, pre-existing design; remove or use in future story
