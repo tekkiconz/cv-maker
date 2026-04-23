@@ -128,3 +128,32 @@ async def test_patch_updated_at_changes(http_client: AsyncClient) -> None:
     assert patch_r.status_code == 200
     body = patch_r.json()
     assert body["updated_at"] >= pre_patch_updated_at
+
+
+async def test_delete_profile_returns_204(http_client: AsyncClient) -> None:
+    r = await http_client.post("/api/profiles", json={"name": "Alice"})
+    assert r.status_code == 201
+    profile_id = r.json()["id"]
+
+    response = await http_client.delete(f"/api/profiles/{profile_id}")
+    assert response.status_code == 204
+    assert response.content == b""
+
+
+async def test_delete_profile_not_found_returns_404(http_client: AsyncClient) -> None:
+    response = await http_client.delete("/api/profiles/99999")
+    assert response.status_code == 404
+
+
+async def test_delete_profile_then_get_returns_404(http_client: AsyncClient) -> None:
+    r = await http_client.post("/api/profiles", json={"name": "Alice"})
+    profile_id = r.json()["id"]
+
+    await http_client.delete(f"/api/profiles/{profile_id}")
+    get_response = await http_client.get(f"/api/profiles/{profile_id}")
+    assert get_response.status_code == 404
+
+
+async def test_delete_profile_zero_id_returns_422(http_client: AsyncClient) -> None:
+    response = await http_client.delete("/api/profiles/0")
+    assert response.status_code == 422
