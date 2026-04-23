@@ -32,7 +32,10 @@ async def get_profile(
     try:
         return await service.get_profile(profile_id)
     except ValueError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Profile not found",
+        ) from None
 
 
 @router.patch("/{profile_id}", response_model=ProfileRead)
@@ -44,4 +47,7 @@ async def update_profile(
     try:
         return await service.update_profile(profile_id, data)
     except ValueError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Profile not found",
+        ) from None
