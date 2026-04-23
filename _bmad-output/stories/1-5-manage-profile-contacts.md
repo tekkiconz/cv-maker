@@ -1,6 +1,6 @@
 # Story 1.5: Manage Profile Contacts
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -25,67 +25,67 @@ so that my CV can include my contact details through the standard profile struct
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add `ProfileContact` model to `app/models/profile.py` (AC: 8)
-  - [ ] 1.1 Add `ProfileContact` class with columns: `id`, `profile_id` (FK → `profiles.id`), `type` (String, not nullable), `value` (String, not nullable).
-  - [ ] 1.2 Add `contacts` relationship to `Profile`: `relationship("ProfileContact", cascade="all, delete-orphan", back_populates="profile")`. Remove the TODO comment about cascade (the contacts relationship satisfies cascade delete for this model — section relationships added in Epic 2 separately).
-  - [ ] 1.3 Add `profile` back-reference on `ProfileContact`: `relationship("Profile", back_populates="contacts")`.
+- [x] Task 1: Add `ProfileContact` model to `app/models/profile.py` (AC: 8)
+  - [x] 1.1 Add `ProfileContact` class with columns: `id`, `profile_id` (FK → `profiles.id`), `type` (String, not nullable), `value` (String, not nullable).
+  - [x] 1.2 Add `contacts` relationship to `Profile`: `relationship("ProfileContact", cascade="all, delete-orphan", back_populates="profile")`. Remove the TODO comment about cascade (the contacts relationship satisfies cascade delete for this model — section relationships added in Epic 2 separately).
+  - [x] 1.3 Add `profile` back-reference on `ProfileContact`: `relationship("Profile", back_populates="contacts")`.
 
-- [ ] Task 2: Add `ContactRepositoryProtocol` to `app/interfaces/database.py` (AC: 11)
-  - [ ] 2.1 Define `ContactRepositoryProtocol(Protocol)` with methods: `create_contact`, `list_contacts`, `get_contact`, `update_contact`, `delete_contact`.
-  - [ ] 2.2 Also add `profile_exists(self, profile_id: int) -> bool` to `ContactRepositoryProtocol` — used by service to validate profile before contact ops.
+- [x] Task 2: Add `ContactRepositoryProtocol` to `app/interfaces/database.py` (AC: 11)
+  - [x] 2.1 Define `ContactRepositoryProtocol(Protocol)` with methods: `create_contact`, `list_contacts`, `get_contact`, `update_contact`, `delete_contact`.
+  - [x] 2.2 Also add `profile_exists(self, profile_id: int) -> bool` to `ContactRepositoryProtocol` — used by service to validate profile before contact ops.
 
-- [ ] Task 3: Add contact schemas to `app/schemas/contact.py` (AC: 1–4)
-  - [ ] 3.1 `ContactCreate(BaseModel)`: `type: ContactType`, `value: str` (non-empty, strip whitespace).
-  - [ ] 3.2 `ContactRead(BaseModel)`: `model_config = ConfigDict(from_attributes=True)`, fields: `id: int`, `profile_id: int`, `type: ContactType`, `value: str`.
-  - [ ] 3.3 `ContactUpdate(BaseModel)`: `value: str | None = None` (same strip/min_length constraints as create).
+- [x] Task 3: Add contact schemas to `app/schemas/contact.py` (AC: 1–4)
+  - [x] 3.1 `ContactCreate(BaseModel)`: `type: ContactType`, `value: str` (non-empty, strip whitespace).
+  - [x] 3.2 `ContactRead(BaseModel)`: `model_config = ConfigDict(from_attributes=True)`, fields: `id: int`, `profile_id: int`, `type: ContactType`, `value: str`.
+  - [x] 3.3 `ContactUpdate(BaseModel)`: `value: str | None = None` (same strip/min_length constraints as create).
 
-- [ ] Task 4: Implement contact methods in `SQLiteDatabaseAdapter` (AC: 1–4, 7)
-  - [ ] 4.1 `profile_exists(self, profile_id: int) -> bool` — `session.get(Profile, profile_id) is not None`.
-  - [ ] 4.2 `create_contact(self, profile_id: int, data: ContactCreate) -> ContactRead` — check contact count ≤ `MAX_CONTACTS_PER_PROFILE` before insert; insert `ProfileContact`; commit/rollback; refresh; return `ContactRead.model_validate(contact)`.
-  - [ ] 4.3 `list_contacts(self, profile_id: int) -> list[ContactRead]` — `select(ProfileContact).where(ProfileContact.profile_id == profile_id)`.
-  - [ ] 4.4 `get_contact(self, profile_id: int, contact_id: int) -> ContactRead | None` — fetch by `id` AND `profile_id` (prevent cross-profile access).
-  - [ ] 4.5 `update_contact(self, profile_id: int, contact_id: int, data: ContactUpdate) -> ContactRead | None` — fetch by `id AND profile_id`; apply `data.model_dump(exclude_unset=True)`; commit; refresh; return.
-  - [ ] 4.6 `delete_contact(self, profile_id: int, contact_id: int) -> bool` — fetch by `id AND profile_id`; delete; commit; return `True`/`False`.
+- [x] Task 4: Implement contact methods in `SQLiteDatabaseAdapter` (AC: 1–4, 7)
+  - [x] 4.1 `profile_exists(self, profile_id: int) -> bool` — `session.get(Profile, profile_id) is not None`.
+  - [x] 4.2 `create_contact(self, profile_id: int, data: ContactCreate) -> ContactRead` — check contact count ≤ `MAX_CONTACTS_PER_PROFILE` before insert; insert `ProfileContact`; commit/rollback; refresh; return `ContactRead.model_validate(contact)`.
+  - [x] 4.3 `list_contacts(self, profile_id: int) -> list[ContactRead]` — `select(ProfileContact).where(ProfileContact.profile_id == profile_id)`.
+  - [x] 4.4 `get_contact(self, profile_id: int, contact_id: int) -> ContactRead | None` — fetch by `id` AND `profile_id` (prevent cross-profile access).
+  - [x] 4.5 `update_contact(self, profile_id: int, contact_id: int, data: ContactUpdate) -> ContactRead | None` — fetch by `id AND profile_id`; apply `data.model_dump(exclude_unset=True)`; commit; refresh; return.
+  - [x] 4.6 `delete_contact(self, profile_id: int, contact_id: int) -> bool` — fetch by `id AND profile_id`; delete; commit; return `True`/`False`.
 
-- [ ] Task 5: Implement `ContactService` in `app/services/contact_service.py` (AC: 7, 11, 12)
-  - [ ] 5.1 Constructor: `def __init__(self, db: ContactRepositoryProtocol) -> None`.
-  - [ ] 5.2 `create_contact(self, profile_id: int, data: ContactCreate) -> ContactRead` — precondition: `profile_id > 0`; validate `profile_exists`; call adapter; postcondition: `result.profile_id == profile_id`.
-  - [ ] 5.3 `list_contacts(self, profile_id: int) -> list[ContactRead]` — precondition: `profile_id > 0`; validate `profile_exists`; call adapter; postcondition: `isinstance(result, list)`.
-  - [ ] 5.4 `get_contact(self, profile_id: int, contact_id: int) -> ContactRead` — preconditions: both > 0; raise `ValueError("Contact {contact_id} not found")` if `None`.
-  - [ ] 5.5 `update_contact(self, profile_id: int, contact_id: int, data: ContactUpdate) -> ContactRead` — same not-found handling.
-  - [ ] 5.6 `delete_contact(self, profile_id: int, contact_id: int) -> None` — preconditions: both > 0; raise `ValueError` if adapter returns `False`.
+- [x] Task 5: Implement `ContactService` in `app/services/contact_service.py` (AC: 7, 11, 12)
+  - [x] 5.1 Constructor: `def __init__(self, db: ContactRepositoryProtocol) -> None`.
+  - [x] 5.2 `create_contact(self, profile_id: int, data: ContactCreate) -> ContactRead` — precondition: `profile_id > 0`; validate `profile_exists`; call adapter; postcondition: `result.profile_id == profile_id`.
+  - [x] 5.3 `list_contacts(self, profile_id: int) -> list[ContactRead]` — precondition: `profile_id > 0`; validate `profile_exists`; call adapter; postcondition: `isinstance(result, list)`.
+  - [x] 5.4 `get_contact(self, profile_id: int, contact_id: int) -> ContactRead` — preconditions: both > 0; raise `ValueError("Contact {contact_id} not found")` if `None`.
+  - [x] 5.5 `update_contact(self, profile_id: int, contact_id: int, data: ContactUpdate) -> ContactRead` — same not-found handling.
+  - [x] 5.6 `delete_contact(self, profile_id: int, contact_id: int) -> None` — preconditions: both > 0; raise `ValueError` if adapter returns `False`.
 
-- [ ] Task 6: Create `app/apis/contacts.py` router (AC: 1–7)
-  - [ ] 6.1 `router = APIRouter(prefix="/api/profiles/{profile_id}/contacts", tags=["contacts"])`.
-  - [ ] 6.2 POST `/` → 201; GET `/` → 200; PATCH `/{contact_id}` → 200; DELETE `/{contact_id}` → 204.
-  - [ ] 6.3 `profile_id` path param: `Path(ge=1)`. `contact_id` path param: `Path(ge=1)`.
-  - [ ] 6.4 `ValueError` from service → `HTTPException(404)` with `from None`.
+- [x] Task 6: Create `app/apis/contacts.py` router (AC: 1–7)
+  - [x] 6.1 `router = APIRouter(prefix="/api/profiles/{profile_id}/contacts", tags=["contacts"])`.
+  - [x] 6.2 POST `/` → 201; GET `/` → 200; PATCH `/{contact_id}` → 200; DELETE `/{contact_id}` → 204.
+  - [x] 6.3 `profile_id` path param: `Path(ge=1)`. `contact_id` path param: `Path(ge=1)`.
+  - [x] 6.4 `ValueError` from service → `HTTPException(404)` with `from None`.
 
-- [ ] Task 7: Wire DI and register router (AC: all)
-  - [ ] 7.1 Add `get_contact_service(session: ...) -> ContactService` to `app/apis/dependencies.py`.
-  - [ ] 7.2 Add `from app.apis.contacts import router as contacts_router` and `app.include_router(contacts_router)` in `app/main.py`.
+- [x] Task 7: Wire DI and register router (AC: all)
+  - [x] 7.1 Add `get_contact_service(session: ...) -> ContactService` to `app/apis/dependencies.py`.
+  - [x] 7.2 Add `from app.apis.contacts import router as contacts_router` and `app.include_router(contacts_router)` in `app/main.py`.
 
-- [ ] Task 8: Generate and verify Alembic migration (AC: 9)
-  - [ ] 8.1 Run `docker compose run --rm app alembic revision --autogenerate -m "create profile_contacts table"` — review the generated migration for correctness.
-  - [ ] 8.2 Verify `down_revision = "996822aeacfb"` (chains after profiles migration).
-  - [ ] 8.3 Expected columns: `id INTEGER PK`, `profile_id INTEGER NOT NULL FK→profiles.id`, `type VARCHAR NOT NULL`, `value VARCHAR NOT NULL`.
-  - [ ] 8.4 Run `docker compose run --rm app alembic upgrade head` — confirms migration applies cleanly.
+- [x] Task 8: Generate and verify Alembic migration (AC: 9)
+  - [x] 8.1 Run `docker compose run --rm app alembic revision --autogenerate -m "create profile_contacts table"` — review the generated migration for correctness.
+  - [x] 8.2 Verify `down_revision = "996822aeacfb"` (chains after profiles migration).
+  - [x] 8.3 Expected columns: `id INTEGER PK`, `profile_id INTEGER NOT NULL FK→profiles.id`, `type VARCHAR NOT NULL`, `value VARCHAR NOT NULL`.
+  - [x] 8.4 Run `docker compose run --rm app alembic upgrade head` — confirms migration applies cleanly.
 
-- [ ] Task 9: Unit tests in `app/services/contact_service.test.py` (AC: 11, 12)
-  - [ ] 9.1 `FakeContactRepository` implementing `ContactRepositoryProtocol` — in-memory list, honors `profile_id` scoping.
-  - [ ] 9.2 Tests: create contact happy path; list contacts; get contact; update contact; delete contact; profile not found → `ValueError`; contact not found → `ValueError`; Tiger Style precondition (`profile_id=0` → `AssertionError`); Tiger Style postcondition (`result.profile_id == profile_id`).
+- [x] Task 9: Unit tests in `app/services/contact_service.test.py` (AC: 11, 12)
+  - [x] 9.1 `FakeContactRepository` implementing `ContactRepositoryProtocol` — in-memory list, honors `profile_id` scoping.
+  - [x] 9.2 Tests: create contact happy path; list contacts; get contact; update contact; delete contact; profile not found → `ValueError`; contact not found → `ValueError`; Tiger Style precondition (`profile_id=0` → `AssertionError`); Tiger Style postcondition (`result.profile_id == profile_id`).
 
-- [ ] Task 10: Integration tests in `tests/api/test_contacts.py` (AC: 1–7)
-  - [ ] 10.1 `POST` happy path → 201; `GET` all → 200; `PATCH` → 200; `DELETE` → 204.
-  - [ ] 10.2 Invalid `type` → 422; missing `value` → 422.
-  - [ ] 10.3 Non-existent `profile_id` → 404.
-  - [ ] 10.4 Non-existent `contact_id` → 404.
-  - [ ] 10.5 Update `conftest.py` `http_client` fixture to also override `get_contact_service`.
+- [x] Task 10: Integration tests in `tests/api/test_contacts.py` (AC: 1–7)
+  - [x] 10.1 `POST` happy path → 201; `GET` all → 200; `PATCH` → 200; `DELETE` → 204.
+  - [x] 10.2 Invalid `type` → 422; missing `value` → 422.
+  - [x] 10.3 Non-existent `profile_id` → 404.
+  - [x] 10.4 Non-existent `contact_id` → 404.
+  - [x] 10.5 Update `conftest.py` `http_client` fixture to also override `get_contact_service`.
 
-- [ ] Task 11: Full validation (AC: all)
-  - [ ] 11.1 `make test-local` — all tests pass, no regressions.
-  - [ ] 11.2 `ruff check . && ruff format --check .` — clean.
-  - [ ] 11.3 `make typecheck-local` — no errors.
+- [x] Task 11: Full validation (AC: all)
+  - [x] 11.1 `make test-local` — all tests pass, no regressions.
+  - [x] 11.2 `ruff check . && ruff format --check .` — clean.
+  - [x] 11.3 `make typecheck-local` — no errors.
 
 ## Dev Notes
 
@@ -303,6 +303,28 @@ claude-sonnet-4-6
 
 ### Debug Log References
 
+N/A
+
 ### Completion Notes List
 
+- All 10 tasks + final validation complete on branch `feature/manage-profile-contacts`
+- 76 tests passing (15 unit + 13 API integration + remainder existing)
+- Lint clean (`ruff check` + `ruff format --check`)
+- Alembic migration `a0726fa39315` chains after `996822aeacfb` (profiles table)
+- Tiger Style assertions on all service methods (pre + postconditions)
+- `ProfileContact` model co-located in `app/models/profile.py` with cascade delete
+
 ### File List
+
+- `app/models/profile.py` — added `ProfileContact` model and `Profile.contacts` relationship
+- `app/interfaces/database.py` — added `ContactRepositoryProtocol`
+- `app/schemas/contact.py` — new: `ContactCreate`, `ContactRead`, `ContactUpdate`
+- `app/services/contact_service.py` — new: `ContactService` with Tiger Style assertions
+- `app/services/contact_service.test.py` — new: 15 unit tests with `FakeContactRepository`
+- `app/adapters/sqlite_database.py` — added `profile_exists` + 5 contact CRUD methods
+- `app/apis/contacts.py` — new: router POST/GET/PATCH/DELETE
+- `app/apis/dependencies.py` — added `get_contact_service`
+- `app/main.py` — registered `contacts_router`
+- `migrations/versions/a0726fa39315_create_profile_contacts_table.py` — new migration
+- `tests/api/test_contacts.py` — new: 13 integration tests
+- `tests/conftest.py` — added `override_contact_service` to `http_client` fixture
