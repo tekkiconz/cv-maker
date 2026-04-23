@@ -141,3 +141,25 @@ async def test_update_profile_zero_id_raises_assertion(service: ProfileService) 
 async def test_get_profile_zero_id_raises_assertion(service: ProfileService) -> None:
     with pytest.raises(AssertionError):
         await service.get_profile(0)
+
+
+async def test_delete_profile_removes_profile(service: ProfileService) -> None:
+    created = await service.create_profile(ProfileCreate(name="Alice", description="Eng"))
+    await service.delete_profile(created.id)
+    with pytest.raises(ValueError, match=f"Profile {created.id} not found"):
+        await service.get_profile(created.id)
+
+
+async def test_delete_profile_not_found_raises(service: ProfileService) -> None:
+    with pytest.raises(ValueError, match="Profile 999 not found"):
+        await service.delete_profile(999)
+
+
+async def test_delete_profile_zero_id_raises_assertion(service: ProfileService) -> None:
+    with pytest.raises(AssertionError):
+        await service.delete_profile(0)
+
+
+async def test_delete_profile_negative_id_raises_assertion(service: ProfileService) -> None:
+    with pytest.raises(AssertionError):
+        await service.delete_profile(-1)
