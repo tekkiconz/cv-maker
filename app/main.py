@@ -6,6 +6,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.adapters.factories import engine
+from app.apis.contacts import router as contacts_router
 from app.apis.profiles import router as profiles_router
 from app.apis.sections import sections_router
 from app.constants.limits import PDFLATEX_HEALTH_CHECK_TIMEOUT_SECONDS
@@ -14,6 +15,7 @@ app = FastAPI(title="CVMaker")
 
 app.include_router(sections_router)
 app.include_router(profiles_router)
+app.include_router(contacts_router)
 
 
 @app.get("/health")

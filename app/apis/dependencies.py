@@ -5,6 +5,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.factories import make_sqlite_adapter, session_factory
+from app.services.contact_service import ContactService
 from app.services.profile_service import ProfileService
 
 
@@ -18,3 +19,10 @@ async def get_profile_service(
 ) -> ProfileService:
     adapter = make_sqlite_adapter(session)
     return ProfileService(adapter)
+
+
+async def get_contact_service(
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+) -> ContactService:
+    adapter = make_sqlite_adapter(session)
+    return ContactService(adapter)

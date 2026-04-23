@@ -10,9 +10,10 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from app.adapters.sqlite_database import SQLiteDatabaseAdapter
-from app.apis.dependencies import get_profile_service
+from app.apis.dependencies import get_contact_service, get_profile_service
 from app.main import app
 from app.models.base import Base
+from app.services.contact_service import ContactService
 from app.services.profile_service import ProfileService
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -42,7 +43,12 @@ async def http_client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient]:
         adapter = SQLiteDatabaseAdapter(db_session)
         return ProfileService(adapter)
 
+    async def override_contact_service() -> ContactService:
+        adapter = SQLiteDatabaseAdapter(db_session)
+        return ContactService(adapter)
+
     app.dependency_overrides[get_profile_service] = override_profile_service
+    app.dependency_overrides[get_contact_service] = override_contact_service
     try:
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             yield client
