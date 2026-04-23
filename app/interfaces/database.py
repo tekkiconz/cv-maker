@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
+    from app.schemas.contact import ContactCreate, ContactRead, ContactUpdate
     from app.schemas.profile import ProfileCreate, ProfileRead, ProfileUpdate
 
 
@@ -30,3 +31,20 @@ class ProfileRepositoryProtocol(Protocol):
     async def update_profile(self, profile_id: int, data: ProfileUpdate) -> ProfileRead | None: ...
 
     async def delete_profile(self, profile_id: int) -> bool: ...
+
+
+@runtime_checkable
+class ContactRepositoryProtocol(Protocol):
+    async def profile_exists(self, profile_id: int) -> bool: ...
+
+    async def create_contact(self, profile_id: int, data: ContactCreate) -> ContactRead: ...
+
+    async def list_contacts(self, profile_id: int) -> list[ContactRead]: ...
+
+    async def get_contact(self, profile_id: int, contact_id: int) -> ContactRead | None: ...
+
+    async def update_contact(
+        self, profile_id: int, contact_id: int, data: ContactUpdate
+    ) -> ContactRead | None: ...
+
+    async def delete_contact(self, profile_id: int, contact_id: int) -> bool: ...
