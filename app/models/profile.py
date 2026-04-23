@@ -13,6 +13,8 @@ def _utcnow() -> datetime:
 
 class Profile(Base):
     __tablename__ = "profiles"
+    # TODO(Story 2.1): add relationship("ExperienceSection", cascade="all, delete-orphan")
+    # once ExperienceSection model exists — satisfies AC 3 cascade delete requirement
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(PROFILE_NAME_MAX_LEN), nullable=False)
