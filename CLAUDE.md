@@ -4,21 +4,39 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
+### Local (preferred for tests — no Docker round-trip)
+
+```bash
+# Bootstrap venv + install deps (run once, or after dep changes)
+make install
+
+# Run all tests locally
+make test-local
+
+# Run a single test file locally
+make test-local ARGS=app/services/profile_service.test.py
+
+# Lint + format check locally
+make lint-local
+
+# Format locally
+make fmt-local
+
+# Type check locally
+make typecheck-local
+```
+
+### Docker (required for migrations and the app runtime)
+
 ```bash
 # Start the app (Docker Compose is the only runtime)
 docker compose up --build
 
-# Run all tests
-docker compose run --rm app pytest
+# Run all tests in Docker
+make test
 
-# Run a single test file
-docker compose run --rm app pytest app/services/profile_service.test.py
-
-# Lint + format
-docker compose run --rm app ruff check . && ruff format .
-
-# Type check
-docker compose run --rm app mypy app/
+# Run a single test file in Docker
+make test ARGS=app/services/profile_service.test.py
 
 # Generate a migration after model changes
 docker compose run --rm app alembic revision --autogenerate -m "description"
@@ -60,6 +78,12 @@ All loop bounds must reference a named constant from `constants/limits.py` — n
 - Never create `BaseService` or `BaseAdapter` — standalone classes only
 - Never swallow exceptions — log and re-raise or convert to a structured error
 - `HX-Request` check lives only in `controllers/`
+
+## Tool Preferences
+
+**Code navigation** — prefer Serena MCP tools (`find_symbol`, `get_symbols_overview`, `find_referencing_symbols`) over grep/read for exploring unfamiliar code.
+
+**Planning / library research** — use Context7 MCP first for latest docs; fall back to web search if Context7 lacks coverage.
 
 ## Key Files
 
