@@ -1,6 +1,6 @@
 # Story 1.4: Delete Profile
 
-Status: review
+Status: done
 
 ## Story
 
