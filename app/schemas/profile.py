@@ -27,3 +27,8 @@ class ProfileRead(BaseModel):
 
 
 ProfileList = list[ProfileRead]
+
+
+class ProfileUpdate(BaseModel):
+    name: ProfileName | None = None
+    description: str | None = Field(default=None, max_length=PROFILE_DESCRIPTION_MAX_LEN)
