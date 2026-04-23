@@ -1,6 +1,6 @@
 # Story 1.3: Edit Profile Details
 
-Status: review
+Status: done
 
 ## Story
 
@@ -231,3 +231,11 @@ claude-sonnet-4-6
 - app/services/profile_service.test.py
 - app/apis/profiles.py
 - tests/api/test_profiles.py
+
+## Review Findings
+
+- [x] [Review][Decision] F1: `profile_id=0` via API produces unhandled `AssertionError` → HTTP 500 — resolved: added `Path(ge=1)` to both `get_profile` and `update_profile` route signatures; assert kept in service as defense-in-depth.
+- [x] [Review][Patch] F2: Weak `updated_at` assertion in integration test [tests/api/test_profiles.py:123] — fixed: now compares `body["updated_at"] >= pre_patch_updated_at` instead of against `created_at`.
+- [x] [Review][Patch] F3: Missing Tiger Style test for `get_profile(0)` [app/services/profile_service.test.py] — fixed: added `test_get_profile_zero_id_raises_assertion`.
+- [x] [Review][Patch] F4: Missing PATCH whitespace-name 422 test [tests/api/test_profiles.py] — fixed: added `test_patch_whitespace_name_returns_422`.
+- [x] [Review][Defer] F5: Empty PATCH body (`{}`) skips write and `updated_at` refresh [app/adapters/sqlite_database.py] — deferred, pre-existing design choice; spec does not cover this edge case

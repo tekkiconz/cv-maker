@@ -129,3 +129,8 @@ async def test_update_profile_not_found_raises(service: ProfileService) -> None:
 async def test_update_profile_zero_id_raises_assertion(service: ProfileService) -> None:
     with pytest.raises(AssertionError):
         await service.update_profile(0, ProfileUpdate(name="Bad"))
+
+
+async def test_get_profile_zero_id_raises_assertion(service: ProfileService) -> None:
+    with pytest.raises(AssertionError):
+        await service.get_profile(0)

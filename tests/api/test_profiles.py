@@ -112,12 +112,19 @@ async def test_patch_nonexistent_id_returns_404(http_client: AsyncClient) -> Non
     assert response.status_code == 404
 
 
+async def test_patch_whitespace_name_returns_422(http_client: AsyncClient) -> None:
+    r = await http_client.post("/api/profiles", json={"name": "Alice"})
+    profile_id = r.json()["id"]
+    response = await http_client.patch(f"/api/profiles/{profile_id}", json={"name": "   "})
+    assert response.status_code == 422
+
+
 async def test_patch_updated_at_changes(http_client: AsyncClient) -> None:
     r = await http_client.post("/api/profiles", json={"name": "Alice", "description": "Eng"})
-    created_at = r.json()["created_at"]
+    pre_patch_updated_at = r.json()["updated_at"]
     profile_id = r.json()["id"]
 
     patch_r = await http_client.patch(f"/api/profiles/{profile_id}", json={"name": "Alicia"})
     assert patch_r.status_code == 200
     body = patch_r.json()
-    assert body["updated_at"] >= created_at
+    assert body["updated_at"] >= pre_patch_updated_at

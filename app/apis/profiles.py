@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Path, status
 
 from app.apis.dependencies import get_profile_service
 from app.schemas.profile import ProfileCreate, ProfileList, ProfileRead, ProfileUpdate
@@ -26,7 +26,7 @@ async def list_profiles(
 
 @router.get("/{profile_id}", response_model=ProfileRead)
 async def get_profile(
-    profile_id: int,
+    profile_id: Annotated[int, Path(ge=1)],
     service: Annotated[ProfileService, Depends(get_profile_service)],
 ) -> ProfileRead:
     try:
@@ -40,7 +40,7 @@ async def get_profile(
 
 @router.patch("/{profile_id}", response_model=ProfileRead)
 async def update_profile(
-    profile_id: int,
+    profile_id: Annotated[int, Path(ge=1)],
     data: ProfileUpdate,
     service: Annotated[ProfileService, Depends(get_profile_service)],
 ) -> ProfileRead:
