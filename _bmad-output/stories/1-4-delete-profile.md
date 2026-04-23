@@ -197,3 +197,14 @@ claude-sonnet-4-6 (coordinator) + claude-haiku-4-5 (implementer subagents)
 ### Change Log
 
 - 2026-04-23: Story 1.4 implemented — DELETE /api/profiles/{id} endpoint with 204/404 responses, Tiger Style assertions, 36 new tests.
+
+### Review Findings
+
+- [x] [Review][Patch] AC 3 not satisfied — add cascade TODO comment to `Profile` model [`app/models/profile.py`]
+- [x] [Review][Patch] Integration test missing POST status assertion [`tests/api/test_profiles.py:149`]
+- [x] [Review][Defer] Bare `except Exception` without logging before re-raise in adapter commit/rollback blocks [`app/adapters/sqlite_database.py`] — deferred, pre-existing pattern across all adapter methods
+- [x] [Review][Defer] Double-delete concurrent race — two requests can both pass `session.get()` None check before either commits [`app/adapters/sqlite_database.py`] — deferred, pre-existing pattern; requires transaction isolation changes
+- [x] [Review][Defer] Adapter `delete_profile` missing Tiger Style precondition assertion [`app/adapters/sqlite_database.py`] — deferred, pre-existing pattern; no adapter method has assertions
+- [x] [Review][Defer] No test for non-integer path segment on DELETE route [`tests/api/test_profiles.py`] — deferred, pre-existing gap across all routes
+- [x] [Review][Defer] Postcondition `get_profile` call unprotected if DB connection drops after commit [`app/services/profile_service.py`] — deferred, systemic concern across all services
+- [x] [Review][Defer] No test for large integer boundary on `profile_id` path param — deferred, infrastructure-level concern
