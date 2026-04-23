@@ -40,6 +40,13 @@ class FakeProfileRepository:
                 return updated
         return None
 
+    async def delete_profile(self, profile_id: int) -> bool:
+        for i, profile in enumerate(self._profiles):
+            if profile.id == profile_id:
+                self._profiles.pop(i)
+                return True
+        return False
+
 
 @pytest.fixture
 def fake_db() -> FakeProfileRepository:

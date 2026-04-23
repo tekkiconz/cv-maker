@@ -67,3 +67,15 @@ class SQLiteDatabaseAdapter:
             raise
         await self._session.refresh(profile)
         return ProfileRead.model_validate(profile)
+
+    async def delete_profile(self, profile_id: int) -> bool:
+        profile = await self._session.get(Profile, profile_id)
+        if profile is None:
+            return False
+        await self._session.delete(profile)
+        try:
+            await self._session.commit()
+        except Exception:
+            await self._session.rollback()
+            raise
+        return True
