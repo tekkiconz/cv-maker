@@ -94,6 +94,7 @@ class SQLiteDatabaseAdapter:
         return await self._session.get(Profile, profile_id) is not None
 
     async def create_contact(self, profile_id: int, data: ContactCreate) -> ContactRead:
+        assert profile_id > 0, "profile_id must be a positive integer"
         existing = await self._session.execute(
             select(ProfileContact).where(ProfileContact.profile_id == profile_id)
         )
@@ -118,6 +119,7 @@ class SQLiteDatabaseAdapter:
         return ContactRead.model_validate(contact)
 
     async def list_contacts(self, profile_id: int) -> list[ContactRead]:
+        assert profile_id > 0, "profile_id must be a positive integer"
         result = await self._session.execute(
             select(ProfileContact).where(ProfileContact.profile_id == profile_id)
         )
@@ -125,6 +127,8 @@ class SQLiteDatabaseAdapter:
         return [ContactRead.model_validate(c) for c in contacts]
 
     async def get_contact(self, profile_id: int, contact_id: int) -> ContactRead | None:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        assert contact_id > 0, "contact_id must be a positive integer"
         result = await self._session.execute(
             select(ProfileContact).where(
                 ProfileContact.id == contact_id,
@@ -139,6 +143,8 @@ class SQLiteDatabaseAdapter:
     async def update_contact(
         self, profile_id: int, contact_id: int, data: ContactUpdate
     ) -> ContactRead | None:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        assert contact_id > 0, "contact_id must be a positive integer"
         result = await self._session.execute(
             select(ProfileContact).where(
                 ProfileContact.id == contact_id,
@@ -162,6 +168,8 @@ class SQLiteDatabaseAdapter:
         return ContactRead.model_validate(contact)
 
     async def delete_contact(self, profile_id: int, contact_id: int) -> bool:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        assert contact_id > 0, "contact_id must be a positive integer"
         result = await self._session.execute(
             select(ProfileContact).where(
                 ProfileContact.id == contact_id,
