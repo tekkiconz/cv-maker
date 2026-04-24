@@ -226,7 +226,9 @@ class SQLiteDatabaseAdapter:
                 ExperienceSection.profile_id == profile_id
             )
         )
-        return result.scalar() or 0
+        count = result.scalar() or 0
+        assert count >= 0, "count_sections_for_profile must return non-negative"
+        return count
 
     async def create_experience_section(
         self, profile_id: int, data: ExperienceSectionCreate
@@ -261,11 +263,14 @@ class SQLiteDatabaseAdapter:
         assert profile_id > 0, "profile_id must be a positive integer"
         result = await self._session.execute(
             select(ExperienceSection)
+            .options(selectinload(ExperienceSection.entries))
             .where(ExperienceSection.profile_id == profile_id)
             .order_by(ExperienceSection.display_order)
         )
         sections = list(result.scalars().all())
-        return [ExperienceSectionRead.model_validate(s) for s in sections]
+        validated = [ExperienceSectionRead.model_validate(s) for s in sections]
+        assert isinstance(validated, list), "list_experience_sections must return a list"
+        return validated
 
     async def get_experience_section(
         self, profile_id: int, section_id: int
@@ -348,7 +353,9 @@ class SQLiteDatabaseAdapter:
                 ExperienceEntry.section_id == section_id
             )
         )
-        return result.scalar() or 0
+        count = result.scalar() or 0
+        assert count >= 0, "count_entries must return non-negative"
+        return count
 
     async def create_entry(
         self, section_id: int, data: ExperienceEntryCreate
@@ -383,7 +390,9 @@ class SQLiteDatabaseAdapter:
             .order_by(ExperienceEntry.display_order)
         )
         entries = list(result.scalars().all())
-        return [ExperienceEntryRead.model_validate(e) for e in entries]
+        validated = [ExperienceEntryRead.model_validate(e) for e in entries]
+        assert isinstance(validated, list), "list_entries must return a list"
+        return validated
 
     async def update_entry(
         self, section_id: int, entry_id: int, data: ExperienceEntryUpdate
