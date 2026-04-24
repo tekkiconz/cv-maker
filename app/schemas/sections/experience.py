@@ -15,8 +15,8 @@ from app.constants.limits import (
 class ExperienceSectionCreate(BaseModel):
     title: str = Field(min_length=1, max_length=EXPERIENCE_TITLE_MAX_LEN)
     organisation: str | None = Field(default=None, max_length=EXPERIENCE_ORGANISATION_MAX_LEN)
-    start_date: str | None = None
-    end_date: str | None = None
+    start_date: str | None = Field(default=None, max_length=EXPERIENCE_DATE_MAX_LEN)
+    end_date: str | None = Field(default=None, max_length=EXPERIENCE_DATE_MAX_LEN)
     is_enabled: bool = True
     display_order: int = 0
 
@@ -49,8 +49,8 @@ class ExperienceSectionRead(BaseModel):
 class ExperienceSectionUpdate(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=EXPERIENCE_TITLE_MAX_LEN)
     organisation: str | None = None
-    start_date: str | None = None
-    end_date: str | None = None
+    start_date: str | None = Field(default=None, max_length=EXPERIENCE_DATE_MAX_LEN)
+    end_date: str | None = Field(default=None, max_length=EXPERIENCE_DATE_MAX_LEN)
     is_enabled: bool | None = None
     display_order: int | None = None
 
