@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from app.constants.limits import MAX_ENTRIES_PER_SECTION, MAX_SECTIONS_PER_PROFILE
 from app.exceptions import EntryLimitExceededError, SectionLimitExceededError
 from app.interfaces.database import ExperienceSectionRepositoryProtocol
