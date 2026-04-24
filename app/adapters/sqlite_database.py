@@ -40,6 +40,7 @@ class SQLiteDatabaseAdapter:
         try:
             await self._session.commit()
         except Exception:
+            logger.exception("create_profile failed")
             await self._session.rollback()
             raise
         await self._session.refresh(profile)
@@ -71,6 +72,7 @@ class SQLiteDatabaseAdapter:
         try:
             await self._session.commit()
         except Exception:
+            logger.exception("update_profile failed for profile_id=%s", profile_id)
             await self._session.rollback()
             raise
         await self._session.refresh(profile)
@@ -85,6 +87,7 @@ class SQLiteDatabaseAdapter:
         try:
             await self._session.commit()
         except Exception:
+            logger.exception("delete_profile failed for profile_id=%s", profile_id)
             await self._session.rollback()
             raise
         return True
@@ -112,6 +115,7 @@ class SQLiteDatabaseAdapter:
         try:
             await self._session.commit()
         except Exception:
+            logger.exception("create_contact failed for profile_id=%s", profile_id)
             await self._session.rollback()
             raise
         await self._session.refresh(contact)
@@ -162,6 +166,7 @@ class SQLiteDatabaseAdapter:
         try:
             await self._session.commit()
         except Exception:
+            logger.exception("update_contact failed for profile_id=%s contact_id=%s", profile_id, contact_id)
             await self._session.rollback()
             raise
         await self._session.refresh(contact)
@@ -183,6 +188,7 @@ class SQLiteDatabaseAdapter:
         try:
             await self._session.commit()
         except Exception:
+            logger.exception("delete_contact failed for profile_id=%s contact_id=%s", profile_id, contact_id)
             await self._session.rollback()
             raise
         return True
