@@ -257,7 +257,13 @@ class SQLiteDatabaseAdapter:
             raise
         await self._session.refresh(section)
         assert section.id is not None, "DB did not assign an id after insert"
-        return ExperienceSectionRead.model_validate(section)
+        result = await self._session.execute(
+            select(ExperienceSection)
+            .options(selectinload(ExperienceSection.entries))
+            .where(ExperienceSection.id == section.id)
+        )
+        loaded = result.scalar_one()
+        return ExperienceSectionRead.model_validate(loaded)
 
     async def list_experience_sections(self, profile_id: int) -> list[ExperienceSectionRead]:
         assert profile_id > 0, "profile_id must be a positive integer"
@@ -319,7 +325,12 @@ class SQLiteDatabaseAdapter:
             await self._session.rollback()
             raise
         await self._session.refresh(section)
-        return ExperienceSectionRead.model_validate(section)
+        refreshed = await self._session.execute(
+            select(ExperienceSection)
+            .options(selectinload(ExperienceSection.entries))
+            .where(ExperienceSection.id == section.id)
+        )
+        return ExperienceSectionRead.model_validate(refreshed.scalar_one())
 
     async def delete_experience_section(self, profile_id: int, section_id: int) -> bool:
         assert profile_id > 0, "profile_id must be a positive integer"
