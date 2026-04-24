@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 from datetime import UTC, datetime
 
 import pytest
 
+from app.constants.limits import MAX_ENTRIES_PER_SECTION, MAX_SECTIONS_PER_PROFILE
 from app.exceptions import EntryLimitExceededError, SectionLimitExceededError
 from app.schemas.sections.experience import (
     ExperienceEntryCreate,
@@ -256,9 +259,6 @@ async def test_create_entry_limit_exceeded_raises(
     service: ExperienceSectionService,
     fake_db: FakeExperienceSectionRepository,
 ) -> None:
-    from app.constants.limits import MAX_ENTRIES_PER_SECTION
-    from app.schemas.sections.experience import ExperienceEntryRead
-
     for i in range(MAX_ENTRIES_PER_SECTION):
         fake_db._entries.append(
             ExperienceEntryRead(id=i + 1, section_id=1, content=f"entry {i}", display_order=i)
@@ -267,6 +267,32 @@ async def test_create_entry_limit_exceeded_raises(
 
     with pytest.raises(EntryLimitExceededError):
         await service.create_entry(1, ExperienceEntryCreate(content="overflow"))
+
+
+async def test_create_section_limit_exceeded_raises(
+    service: ExperienceSectionService,
+    fake_db: FakeExperienceSectionRepository,
+) -> None:
+    for i in range(MAX_SECTIONS_PER_PROFILE):
+        fake_db._sections.append(
+            ExperienceSectionRead(
+                id=i + 1,
+                profile_id=1,
+                title=f"section {i}",
+                organisation=None,
+                start_date=None,
+                end_date=None,
+                is_enabled=True,
+                display_order=i,
+                created_at=_now(),
+                updated_at=_now(),
+                entries=[],
+            )
+        )
+    fake_db._next_section_id = MAX_SECTIONS_PER_PROFILE + 1
+
+    with pytest.raises(SectionLimitExceededError):
+        await service.create_experience_section(1, ExperienceSectionCreate(title="overflow"))
 
 
 async def test_update_entry_happy_path(service: ExperienceSectionService) -> None:
