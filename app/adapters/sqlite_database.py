@@ -1,14 +1,32 @@
 import logging
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from app.constants.limits import MAX_CONTACTS_PER_PROFILE
-from app.exceptions import ContactLimitExceededError
+from app.constants.limits import (
+    MAX_CONTACTS_PER_PROFILE,
+    MAX_ENTRIES_PER_SECTION,
+    MAX_SECTIONS_PER_PROFILE,
+)
+from app.exceptions import (
+    ContactLimitExceededError,
+    EntryLimitExceededError,
+    SectionLimitExceededError,
+)
 from app.models.profile import Profile, ProfileContact
+from app.models.sections.experience import ExperienceEntry, ExperienceSection
 from app.schemas.contact import ContactCreate, ContactRead, ContactUpdate
 from app.schemas.profile import ProfileCreate, ProfileRead, ProfileUpdate
+from app.schemas.sections.experience import (
+    ExperienceEntryCreate,
+    ExperienceEntryRead,
+    ExperienceEntryUpdate,
+    ExperienceSectionCreate,
+    ExperienceSectionRead,
+    ExperienceSectionUpdate,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -196,6 +214,223 @@ class SQLiteDatabaseAdapter:
                 "delete_contact failed for profile_id=%s contact_id=%s",
                 profile_id,
                 contact_id,
+            )
+            await self._session.rollback()
+            raise
+        return True
+
+    async def count_sections_for_profile(self, profile_id: int) -> int:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        result = await self._session.execute(
+            select(func.count()).select_from(ExperienceSection).where(
+                ExperienceSection.profile_id == profile_id
+            )
+        )
+        return result.scalar() or 0
+
+    async def create_experience_section(
+        self, profile_id: int, data: ExperienceSectionCreate
+    ) -> ExperienceSectionRead:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        count = await self.count_sections_for_profile(profile_id)
+        if count >= MAX_SECTIONS_PER_PROFILE:
+            raise SectionLimitExceededError(
+                f"profile {profile_id} has {count} sections; max {MAX_SECTIONS_PER_PROFILE}"
+            )
+        section = ExperienceSection(
+            profile_id=profile_id,
+            title=data.title,
+            organisation=data.organisation,
+            start_date=data.start_date,
+            end_date=data.end_date,
+            is_enabled=data.is_enabled,
+            display_order=data.display_order,
+        )
+        self._session.add(section)
+        try:
+            await self._session.commit()
+        except Exception:
+            logger.exception("create_experience_section failed for profile_id=%s", profile_id)
+            await self._session.rollback()
+            raise
+        await self._session.refresh(section)
+        assert section.id is not None, "DB did not assign an id after insert"
+        return ExperienceSectionRead.model_validate(section)
+
+    async def list_experience_sections(self, profile_id: int) -> list[ExperienceSectionRead]:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        result = await self._session.execute(
+            select(ExperienceSection)
+            .where(ExperienceSection.profile_id == profile_id)
+            .order_by(ExperienceSection.display_order)
+        )
+        sections = list(result.scalars().all())
+        return [ExperienceSectionRead.model_validate(s) for s in sections]
+
+    async def get_experience_section(
+        self, profile_id: int, section_id: int
+    ) -> ExperienceSectionRead | None:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        assert section_id > 0, "section_id must be a positive integer"
+        stmt = (
+            select(ExperienceSection)
+            .options(selectinload(ExperienceSection.entries))
+            .where(
+                ExperienceSection.id == section_id,
+                ExperienceSection.profile_id == profile_id,
+            )
+        )
+        result = await self._session.execute(stmt)
+        section = result.scalar_one_or_none()
+        if section is None:
+            return None
+        return ExperienceSectionRead.model_validate(section)
+
+    async def update_experience_section(
+        self, profile_id: int, section_id: int, data: ExperienceSectionUpdate
+    ) -> ExperienceSectionRead | None:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        assert section_id > 0, "section_id must be a positive integer"
+        result = await self._session.execute(
+            select(ExperienceSection).where(
+                ExperienceSection.id == section_id,
+                ExperienceSection.profile_id == profile_id,
+            )
+        )
+        section = result.scalar_one_or_none()
+        if section is None:
+            return None
+        update_dict = data.model_dump(exclude_unset=True)
+        for key, value in update_dict.items():
+            setattr(section, key, value)
+        try:
+            await self._session.commit()
+        except Exception:
+            logger.exception(
+                "update_experience_section failed for profile_id=%s section_id=%s",
+                profile_id,
+                section_id,
+            )
+            await self._session.rollback()
+            raise
+        await self._session.refresh(section)
+        return ExperienceSectionRead.model_validate(section)
+
+    async def delete_experience_section(self, profile_id: int, section_id: int) -> bool:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        assert section_id > 0, "section_id must be a positive integer"
+        result = await self._session.execute(
+            select(ExperienceSection).where(
+                ExperienceSection.id == section_id,
+                ExperienceSection.profile_id == profile_id,
+            )
+        )
+        section = result.scalar_one_or_none()
+        if section is None:
+            return False
+        await self._session.delete(section)
+        try:
+            await self._session.commit()
+        except Exception:
+            logger.exception(
+                "delete_experience_section failed for profile_id=%s section_id=%s",
+                profile_id,
+                section_id,
+            )
+            await self._session.rollback()
+            raise
+        return True
+
+    async def count_entries(self, section_id: int) -> int:
+        assert section_id > 0, "section_id must be a positive integer"
+        result = await self._session.execute(
+            select(func.count()).select_from(ExperienceEntry).where(
+                ExperienceEntry.section_id == section_id
+            )
+        )
+        return result.scalar() or 0
+
+    async def create_entry(
+        self, section_id: int, data: ExperienceEntryCreate
+    ) -> ExperienceEntryRead:
+        assert section_id > 0, "section_id must be a positive integer"
+        count = await self.count_entries(section_id)
+        if count >= MAX_ENTRIES_PER_SECTION:
+            raise EntryLimitExceededError(
+                f"section {section_id} has {count} entries; max {MAX_ENTRIES_PER_SECTION}"
+            )
+        entry = ExperienceEntry(
+            section_id=section_id,
+            content=data.content,
+            display_order=data.display_order,
+        )
+        self._session.add(entry)
+        try:
+            await self._session.commit()
+        except Exception:
+            logger.exception("create_entry failed for section_id=%s", section_id)
+            await self._session.rollback()
+            raise
+        await self._session.refresh(entry)
+        assert entry.id is not None, "DB did not assign an id after insert"
+        return ExperienceEntryRead.model_validate(entry)
+
+    async def list_entries(self, section_id: int) -> list[ExperienceEntryRead]:
+        assert section_id > 0, "section_id must be a positive integer"
+        result = await self._session.execute(
+            select(ExperienceEntry)
+            .where(ExperienceEntry.section_id == section_id)
+            .order_by(ExperienceEntry.display_order)
+        )
+        entries = list(result.scalars().all())
+        return [ExperienceEntryRead.model_validate(e) for e in entries]
+
+    async def update_entry(
+        self, section_id: int, entry_id: int, data: ExperienceEntryUpdate
+    ) -> ExperienceEntryRead | None:
+        assert section_id > 0, "section_id must be a positive integer"
+        assert entry_id > 0, "entry_id must be a positive integer"
+        result = await self._session.execute(
+            select(ExperienceEntry).where(
+                ExperienceEntry.id == entry_id,
+                ExperienceEntry.section_id == section_id,
+            )
+        )
+        entry = result.scalar_one_or_none()
+        if entry is None:
+            return None
+        update_dict = data.model_dump(exclude_unset=True)
+        for key, value in update_dict.items():
+            setattr(entry, key, value)
+        try:
+            await self._session.commit()
+        except Exception:
+            logger.exception(
+                "update_entry failed for section_id=%s entry_id=%s", section_id, entry_id
+            )
+            await self._session.rollback()
+            raise
+        await self._session.refresh(entry)
+        return ExperienceEntryRead.model_validate(entry)
+
+    async def delete_entry(self, section_id: int, entry_id: int) -> bool:
+        assert section_id > 0, "section_id must be a positive integer"
+        assert entry_id > 0, "entry_id must be a positive integer"
+        result = await self._session.execute(
+            select(ExperienceEntry).where(
+                ExperienceEntry.id == entry_id,
+                ExperienceEntry.section_id == section_id,
+            )
+        )
+        entry = result.scalar_one_or_none()
+        if entry is None:
+            return False
+        await self._session.delete(entry)
+        try:
+            await self._session.commit()
+        except Exception:
+            logger.exception(
+                "delete_entry failed for section_id=%s entry_id=%s", section_id, entry_id
             )
             await self._session.rollback()
             raise
