@@ -159,3 +159,21 @@ async def test_delete_profile_then_get_returns_404(http_client: AsyncClient) -> 
 async def test_delete_profile_zero_id_returns_422(http_client: AsyncClient) -> None:
     response = await http_client.delete("/api/profiles/0")
     assert response.status_code == 422
+
+
+async def test_delete_profile_cascades_contacts(http_client: AsyncClient) -> None:
+    create_r = await http_client.post("/api/profiles", json={"name": "Cascade Test", "description": ""})
+    assert create_r.status_code == 201
+    pid = create_r.json()["id"]
+
+    contact_r = await http_client.post(
+        f"/api/profiles/{pid}/contacts",
+        json={"type": "email", "value": "x@example.com"},
+    )
+    assert contact_r.status_code == 201
+
+    del_r = await http_client.delete(f"/api/profiles/{pid}")
+    assert del_r.status_code == 204
+
+    get_r = await http_client.get(f"/api/profiles/{pid}/contacts")
+    assert get_r.status_code == 404
