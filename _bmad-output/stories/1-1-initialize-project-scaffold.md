@@ -1,6 +1,6 @@
 # Story 1.1: Initialize Project Scaffold & Docker Compose
 
-Status: review
+Status: done
 
 ## Story
 
