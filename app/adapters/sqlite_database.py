@@ -54,12 +54,14 @@ class SQLiteDatabaseAdapter:
         return validated
 
     async def get_profile(self, profile_id: int) -> ProfileRead | None:
+        assert profile_id > 0, "profile_id must be a positive integer"
         profile = await self._session.get(Profile, profile_id)
         if profile is None:
             return None
         return ProfileRead.model_validate(profile)
 
     async def update_profile(self, profile_id: int, data: ProfileUpdate) -> ProfileRead | None:
+        assert profile_id > 0, "profile_id must be a positive integer"
         profile = await self._session.get(Profile, profile_id)
         if profile is None:
             return None
@@ -75,6 +77,7 @@ class SQLiteDatabaseAdapter:
         return ProfileRead.model_validate(profile)
 
     async def delete_profile(self, profile_id: int) -> bool:
+        assert profile_id > 0, "profile_id must be a positive integer"
         profile = await self._session.get(Profile, profile_id)
         if profile is None:
             return False
@@ -87,6 +90,7 @@ class SQLiteDatabaseAdapter:
         return True
 
     async def profile_exists(self, profile_id: int) -> bool:
+        assert profile_id > 0, "profile_id must be a positive integer"
         return await self._session.get(Profile, profile_id) is not None
 
     async def create_contact(self, profile_id: int, data: ContactCreate) -> ContactRead:
