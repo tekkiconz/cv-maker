@@ -119,6 +119,10 @@ async def create_entry(
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
         ) from None
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Section not found"
+        ) from None
 
 
 @router.patch("/{section_id}/entries/{entry_id}", response_model=ExperienceEntryRead)
