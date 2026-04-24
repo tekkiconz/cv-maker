@@ -162,7 +162,9 @@ async def test_delete_profile_zero_id_returns_422(http_client: AsyncClient) -> N
 
 
 async def test_delete_profile_cascades_contacts(http_client: AsyncClient) -> None:
-    create_r = await http_client.post("/api/profiles", json={"name": "Cascade Test", "description": ""})
+    create_r = await http_client.post(
+        "/api/profiles", json={"name": "Cascade Test", "description": ""}
+    )
     assert create_r.status_code == 201
     pid = create_r.json()["id"]
 
