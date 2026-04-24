@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 from sqlalchemy import select
@@ -8,6 +9,8 @@ from app.exceptions import ContactLimitExceededError
 from app.models.profile import Profile, ProfileContact
 from app.schemas.contact import ContactCreate, ContactRead, ContactUpdate
 from app.schemas.profile import ProfileCreate, ProfileRead, ProfileUpdate
+
+logger = logging.getLogger(__name__)
 
 
 class SQLiteDatabaseAdapter:
