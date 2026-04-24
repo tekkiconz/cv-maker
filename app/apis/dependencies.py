@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.adapters.factories import make_sqlite_adapter, session_factory
 from app.services.contact_service import ContactService
 from app.services.profile_service import ProfileService
+from app.services.sections.experience_service import ExperienceSectionService
 
 
 async def get_db_session() -> AsyncGenerator[AsyncSession]:
@@ -26,3 +27,10 @@ async def get_contact_service(
 ) -> ContactService:
     adapter = make_sqlite_adapter(session)
     return ContactService(adapter)
+
+
+async def get_experience_section_service(
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+) -> ExperienceSectionService:
+    adapter = make_sqlite_adapter(session)
+    return ExperienceSectionService(adapter)
