@@ -166,7 +166,11 @@ class SQLiteDatabaseAdapter:
         try:
             await self._session.commit()
         except Exception:
-            logger.exception("update_contact failed for profile_id=%s contact_id=%s", profile_id, contact_id)
+            logger.exception(
+                "update_contact failed for profile_id=%s contact_id=%s",
+                profile_id,
+                contact_id,
+            )
             await self._session.rollback()
             raise
         await self._session.refresh(contact)
@@ -188,7 +192,11 @@ class SQLiteDatabaseAdapter:
         try:
             await self._session.commit()
         except Exception:
-            logger.exception("delete_contact failed for profile_id=%s contact_id=%s", profile_id, contact_id)
+            logger.exception(
+                "delete_contact failed for profile_id=%s contact_id=%s",
+                profile_id,
+                contact_id,
+            )
             await self._session.rollback()
             raise
         return True
