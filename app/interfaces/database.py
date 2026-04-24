@@ -66,9 +66,7 @@ class ExperienceSectionRepositoryProtocol(Protocol):
         self, profile_id: int, data: ExperienceSectionCreate
     ) -> ExperienceSectionRead: ...
 
-    async def list_experience_sections(
-        self, profile_id: int
-    ) -> list[ExperienceSectionRead]: ...
+    async def list_experience_sections(self, profile_id: int) -> list[ExperienceSectionRead]: ...
 
     async def get_experience_section(
         self, profile_id: int, section_id: int

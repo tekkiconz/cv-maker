@@ -137,6 +137,7 @@ def service(fake_db: FakeExperienceSectionRepository) -> ExperienceSectionServic
 
 # --- Section happy paths ---
 
+
 async def test_create_experience_section_happy_path(service: ExperienceSectionService) -> None:
     data = ExperienceSectionCreate(title="Software Engineer", organisation="Acme")
     result = await service.create_experience_section(1, data)
@@ -157,20 +158,14 @@ async def test_create_experience_section_postcondition_profile_id_matches(
 async def test_list_experience_sections_ordered_by_display_order(
     service: ExperienceSectionService,
 ) -> None:
-    await service.create_experience_section(
-        1, ExperienceSectionCreate(title="B", display_order=2)
-    )
-    await service.create_experience_section(
-        1, ExperienceSectionCreate(title="A", display_order=1)
-    )
+    await service.create_experience_section(1, ExperienceSectionCreate(title="B", display_order=2))
+    await service.create_experience_section(1, ExperienceSectionCreate(title="A", display_order=1))
     result = await service.list_experience_sections(1)
     assert [s.title for s in result] == ["A", "B"]
 
 
 async def test_get_experience_section_happy_path(service: ExperienceSectionService) -> None:
-    created = await service.create_experience_section(
-        1, ExperienceSectionCreate(title="Engineer")
-    )
+    created = await service.create_experience_section(1, ExperienceSectionCreate(title="Engineer"))
     result = await service.get_experience_section(1, created.id)
     assert result.id == created.id
     assert result.title == "Engineer"
@@ -184,9 +179,7 @@ async def test_get_experience_section_not_found_raises(
 
 
 async def test_update_experience_section_happy_path(service: ExperienceSectionService) -> None:
-    created = await service.create_experience_section(
-        1, ExperienceSectionCreate(title="Old Title")
-    )
+    created = await service.create_experience_section(1, ExperienceSectionCreate(title="Old Title"))
     result = await service.update_experience_section(
         1, created.id, ExperienceSectionUpdate(title="New Title")
     )
@@ -201,9 +194,7 @@ async def test_update_experience_section_not_found_raises(
 
 
 async def test_toggle_is_enabled_false(service: ExperienceSectionService) -> None:
-    created = await service.create_experience_section(
-        1, ExperienceSectionCreate(title="Dev")
-    )
+    created = await service.create_experience_section(1, ExperienceSectionCreate(title="Dev"))
     result = await service.update_experience_section(
         1, created.id, ExperienceSectionUpdate(is_enabled=False)
     )
@@ -211,9 +202,7 @@ async def test_toggle_is_enabled_false(service: ExperienceSectionService) -> Non
 
 
 async def test_toggle_is_enabled_back_to_true(service: ExperienceSectionService) -> None:
-    created = await service.create_experience_section(
-        1, ExperienceSectionCreate(title="Dev")
-    )
+    created = await service.create_experience_section(1, ExperienceSectionCreate(title="Dev"))
     await service.update_experience_section(
         1, created.id, ExperienceSectionUpdate(is_enabled=False)
     )
@@ -224,9 +213,7 @@ async def test_toggle_is_enabled_back_to_true(service: ExperienceSectionService)
 
 
 async def test_delete_experience_section(service: ExperienceSectionService) -> None:
-    created = await service.create_experience_section(
-        1, ExperienceSectionCreate(title="Dev")
-    )
+    created = await service.create_experience_section(1, ExperienceSectionCreate(title="Dev"))
     await service.delete_experience_section(1, created.id)
     with pytest.raises(ValueError, match=f"Section {created.id} not found"):
         await service.get_experience_section(1, created.id)
@@ -240,6 +227,7 @@ async def test_delete_experience_section_not_found_raises(
 
 
 # --- Entry happy paths ---
+
 
 async def test_create_entry_happy_path(service: ExperienceSectionService) -> None:
     result = await service.create_entry(1, ExperienceEntryCreate(content="Led a team of 5"))
@@ -320,6 +308,7 @@ async def test_delete_entry_not_found_raises(service: ExperienceSectionService) 
 
 # --- Profile-not-found raises ---
 
+
 async def test_create_section_profile_not_found_raises(service: ExperienceSectionService) -> None:
     with pytest.raises(ValueError, match="Profile 99 not found"):
         await service.create_experience_section(99, ExperienceSectionCreate(title="X"))
@@ -346,6 +335,7 @@ async def test_delete_section_profile_not_found_raises(service: ExperienceSectio
 
 
 # --- Tiger Style assertion failures ---
+
 
 async def test_tiger_create_section_profile_id_zero_raises(
     service: ExperienceSectionService,

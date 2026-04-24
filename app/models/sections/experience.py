@@ -28,7 +28,9 @@ class ExperienceSection(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     profile_id: Mapped[int] = mapped_column(ForeignKey("profiles.id"), nullable=False)
     title: Mapped[str] = mapped_column(String(EXPERIENCE_TITLE_MAX_LEN), nullable=False)
-    organisation: Mapped[str | None] = mapped_column(String(EXPERIENCE_ORGANISATION_MAX_LEN), nullable=True)
+    organisation: Mapped[str | None] = mapped_column(
+        String(EXPERIENCE_ORGANISATION_MAX_LEN), nullable=True
+    )
     start_date: Mapped[str | None] = mapped_column(String(EXPERIENCE_DATE_MAX_LEN), nullable=True)
     end_date: Mapped[str | None] = mapped_column(String(EXPERIENCE_DATE_MAX_LEN), nullable=True)
     is_enabled: Mapped[bool] = mapped_column(default=True, nullable=False)
@@ -49,8 +51,6 @@ class ExperienceEntry(Base):
     __tablename__ = "experience_entries"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    section_id: Mapped[int] = mapped_column(
-        ForeignKey("experience_sections.id"), nullable=False
-    )
+    section_id: Mapped[int] = mapped_column(ForeignKey("experience_sections.id"), nullable=False)
     content: Mapped[str] = mapped_column(String(EXPERIENCE_ENTRY_CONTENT_MAX_LEN), nullable=False)
     display_order: Mapped[int] = mapped_column(default=0, nullable=False)

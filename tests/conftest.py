@@ -10,7 +10,11 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from app.adapters.sqlite_database import SQLiteDatabaseAdapter
-from app.apis.dependencies import get_contact_service, get_experience_section_service, get_profile_service
+from app.apis.dependencies import (
+    get_contact_service,
+    get_experience_section_service,
+    get_profile_service,
+)
 from app.main import app
 from app.models.base import Base
 from app.services.contact_service import ContactService

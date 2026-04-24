@@ -61,5 +61,7 @@ class ExperienceEntryCreate(BaseModel):
 
 
 class ExperienceEntryUpdate(BaseModel):
-    content: str | None = Field(default=None, min_length=1, max_length=EXPERIENCE_ENTRY_CONTENT_MAX_LEN)
+    content: str | None = Field(
+        default=None, min_length=1, max_length=EXPERIENCE_ENTRY_CONTENT_MAX_LEN
+    )
     display_order: int | None = None

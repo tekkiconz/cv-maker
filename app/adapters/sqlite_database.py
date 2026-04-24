@@ -222,9 +222,9 @@ class SQLiteDatabaseAdapter:
     async def count_sections_for_profile(self, profile_id: int) -> int:
         assert profile_id > 0, "profile_id must be a positive integer"
         result = await self._session.execute(
-            select(func.count()).select_from(ExperienceSection).where(
-                ExperienceSection.profile_id == profile_id
-            )
+            select(func.count())
+            .select_from(ExperienceSection)
+            .where(ExperienceSection.profile_id == profile_id)
         )
         count = result.scalar() or 0
         assert count >= 0, "count_sections_for_profile must return non-negative"
@@ -360,9 +360,9 @@ class SQLiteDatabaseAdapter:
     async def count_entries(self, section_id: int) -> int:
         assert section_id > 0, "section_id must be a positive integer"
         result = await self._session.execute(
-            select(func.count()).select_from(ExperienceEntry).where(
-                ExperienceEntry.section_id == section_id
-            )
+            select(func.count())
+            .select_from(ExperienceEntry)
+            .where(ExperienceEntry.section_id == section_id)
         )
         count = result.scalar() or 0
         assert count >= 0, "count_entries must return non-negative"
