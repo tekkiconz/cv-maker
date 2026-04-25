@@ -1,6 +1,6 @@
 # Story 2.1: Experience Section CRUD
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -470,15 +470,15 @@ From Story 1.4 (delete profile):
 
 ## Review Findings
 
-- [ ] [Review][Decision] D1: `ExperienceSectionRead` exposes `created_at`/`updated_at` — AC1 enumerates exact return fields without timestamps; intentional extension or spec violation?
-- [ ] [Review][Patch] P1: Remove duplicate limit enforcement from adapter — limit checks belong in service only [`app/adapters/sqlite_database.py`]
-- [ ] [Review][Patch] P2: Entry API endpoints (`create_entry`, `update_entry`, `delete_entry`) ignore `profile_id` — cross-profile access vulnerability [`app/apis/sections/experience.py:432-479`]
-- [ ] [Review][Patch] P3: `create_entry` in service does not verify section exists before insert — missing existence check leads to unhandled FK IntegrityError [`app/services/sections/experience_service.py:836-847`]
-- [ ] [Review][Patch] P4: `list_experience_sections` and `create_experience_section` populate `entries` via selectinload — spec requires `entries: []` on list/create responses [`app/adapters/sqlite_database.py:84-96`]
-- [ ] [Review][Patch] P5: `ExperienceSectionUpdate` fields missing `max_length` constraints — PATCH can write oversized values producing unhandled DB errors [`app/schemas/sections/experience.py:733-740`]
-- [ ] [Review][Patch] P6: `noqa: F401` stripped from `app/models/profile` import in `migrations/env.py` [`migrations/env.py`]
-- [ ] [Review][Patch] P7: `update_experience_section` issues a redundant `session.refresh()` before re-fetch — wasted DB round-trip [`app/adapters/sqlite_database.py:151`]
-- [ ] [Review][Patch] P8: Cascade integration test does not verify `ExperienceEntry` cascade — `Profile → Section → Entry` chain untested [`tests/api/test_profiles.py`]
+- [x] [Review][Decision] D1: `ExperienceSectionRead` exposes `created_at`/`updated_at` — AC1 enumerates exact return fields without timestamps; intentional extension or spec violation? **Decision: accepted as intentional extension — timestamps aid debugging and auditing; no AC explicitly excludes them.**
+- [x] [Review][Patch] P1: Remove duplicate limit enforcement from adapter — limit checks belong in service only [`app/adapters/sqlite_database.py`]
+- [x] [Review][Patch] P2: Entry API endpoints (`create_entry`, `update_entry`, `delete_entry`) ignore `profile_id` — cross-profile access vulnerability [`app/apis/sections/experience.py`]
+- [x] [Review][Patch] P3: `create_entry` in service does not verify section exists before insert — missing existence check leads to unhandled FK IntegrityError [`app/services/sections/experience_service.py`]
+- [x] [Review][Patch] P4: `list_experience_sections` and `create_experience_section` populate `entries` via selectinload — spec requires `entries: []` on list/create responses [`app/adapters/sqlite_database.py`]
+- [x] [Review][Patch] P5: `ExperienceSectionUpdate` fields missing `max_length` constraints — PATCH can write oversized values producing unhandled DB errors [`app/schemas/sections/experience.py`]
+- [x] [Review][Patch] P6: `noqa: F401` stripped from `app/models/profile` import in `migrations/env.py` [`migrations/env.py`]
+- [x] [Review][Patch] P7: `update_experience_section` issues a redundant `session.refresh()` before re-fetch — wasted DB round-trip [`app/adapters/sqlite_database.py`]
+- [x] [Review][Patch] P8: Cascade integration test does not verify `ExperienceEntry` cascade — `Profile → Section → Entry` chain untested [`tests/api/test_profiles.py`]
 - [x] [Review][Defer] W1: Migration FK constraints have no `ON DELETE CASCADE` [`migrations/versions/82e204f0235c_*.py`] — deferred, pre-existing ORM-level cascade pattern
 - [x] [Review][Defer] W2: `display_order` accepts negative integers — not a spec requirement [`app/schemas/sections/experience.py`] — deferred, pre-existing
 - [x] [Review][Defer] W3: `list_entries` exists in service/adapter/protocol with no API route — spec-correct (no endpoint), used in tests for state inspection — deferred, pre-existing
