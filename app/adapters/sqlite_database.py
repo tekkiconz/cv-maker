@@ -5,16 +5,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.constants.limits import (
-    MAX_CONTACTS_PER_PROFILE,
-    MAX_ENTRIES_PER_SECTION,
-    MAX_SECTIONS_PER_PROFILE,
-)
-from app.exceptions import (
-    ContactLimitExceededError,
-    EntryLimitExceededError,
-    SectionLimitExceededError,
-)
+from app.constants.limits import MAX_CONTACTS_PER_PROFILE
+from app.exceptions import ContactLimitExceededError
 from app.models.profile import Profile, ProfileContact
 from app.models.sections.experience import ExperienceEntry, ExperienceSection
 from app.schemas.contact import ContactCreate, ContactRead, ContactUpdate
@@ -234,11 +226,6 @@ class SQLiteDatabaseAdapter:
         self, profile_id: int, data: ExperienceSectionCreate
     ) -> ExperienceSectionRead:
         assert profile_id > 0, "profile_id must be a positive integer"
-        count = await self.count_sections_for_profile(profile_id)
-        if count >= MAX_SECTIONS_PER_PROFILE:
-            raise SectionLimitExceededError(
-                f"profile {profile_id} has {count} sections; max {MAX_SECTIONS_PER_PROFILE}"
-            )
         section = ExperienceSection(
             profile_id=profile_id,
             title=data.title,
@@ -385,11 +372,6 @@ class SQLiteDatabaseAdapter:
         self, section_id: int, data: ExperienceEntryCreate
     ) -> ExperienceEntryRead:
         assert section_id > 0, "section_id must be a positive integer"
-        count = await self.count_entries(section_id)
-        if count >= MAX_ENTRIES_PER_SECTION:
-            raise EntryLimitExceededError(
-                f"section {section_id} has {count} entries; max {MAX_ENTRIES_PER_SECTION}"
-            )
         entry = ExperienceEntry(
             section_id=section_id,
             content=data.content,
