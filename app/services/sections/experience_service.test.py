@@ -384,3 +384,15 @@ async def test_tiger_delete_entry_entry_id_zero_raises(
 ) -> None:
     with pytest.raises(AssertionError):
         await service.delete_entry(1, 0)
+
+
+async def test_list_experience_sections_entries_not_populated() -> None:
+    """list endpoint must return entries=[] (not eagerly loaded)."""
+    fake_db = FakeExperienceSectionRepository()
+    fake_db._profiles.add(1)
+    svc = ExperienceSectionService(fake_db)
+
+    await svc.create_experience_section(1, ExperienceSectionCreate(title="Job A"))
+    sections = await svc.list_experience_sections(1)
+
+    assert sections[0].entries == []

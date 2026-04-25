@@ -257,24 +257,38 @@ class SQLiteDatabaseAdapter:
             raise
         await self._session.refresh(section)
         assert section.id is not None, "DB did not assign an id after insert"
-        result = await self._session.execute(
-            select(ExperienceSection)
-            .options(selectinload(ExperienceSection.entries))
-            .where(ExperienceSection.id == section.id)
+        result = self._section_to_read(section)
+        assert result.profile_id == profile_id, "returned section profile_id must match request"
+        assert result.entries == [], "create must return section with empty entries"
+        return result
+
+    @staticmethod
+    def _section_to_read(section: ExperienceSection) -> ExperienceSectionRead:
+        return ExperienceSectionRead.model_validate(
+            {
+                "id": section.id,
+                "profile_id": section.profile_id,
+                "title": section.title,
+                "organisation": section.organisation,
+                "start_date": section.start_date,
+                "end_date": section.end_date,
+                "is_enabled": section.is_enabled,
+                "display_order": section.display_order,
+                "created_at": section.created_at,
+                "updated_at": section.updated_at,
+                "entries": [],
+            }
         )
-        loaded = result.scalar_one()
-        return ExperienceSectionRead.model_validate(loaded)
 
     async def list_experience_sections(self, profile_id: int) -> list[ExperienceSectionRead]:
         assert profile_id > 0, "profile_id must be a positive integer"
         result = await self._session.execute(
             select(ExperienceSection)
-            .options(selectinload(ExperienceSection.entries))
             .where(ExperienceSection.profile_id == profile_id)
             .order_by(ExperienceSection.display_order)
         )
         sections = list(result.scalars().all())
-        validated = [ExperienceSectionRead.model_validate(s) for s in sections]
+        validated = [self._section_to_read(s) for s in sections]
         assert isinstance(validated, list), "list_experience_sections must return a list"
         return validated
 
