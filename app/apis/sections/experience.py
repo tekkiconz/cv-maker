@@ -114,7 +114,7 @@ async def create_entry(
     service: ServiceDep,
 ) -> ExperienceEntryRead:
     try:
-        return await service.create_entry(section_id, data)
+        return await service.create_entry(profile_id, section_id, data)
     except EntryLimitExceededError as exc:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
@@ -134,7 +134,7 @@ async def update_entry(
     service: ServiceDep,
 ) -> ExperienceEntryRead:
     try:
-        return await service.update_entry(section_id, entry_id, data)
+        return await service.update_entry(profile_id, section_id, entry_id, data)
     except ValueError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found"
@@ -149,7 +149,7 @@ async def delete_entry(
     service: ServiceDep,
 ) -> Response:
     try:
-        await service.delete_entry(section_id, entry_id)
+        await service.delete_entry(profile_id, section_id, entry_id)
     except ValueError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found"

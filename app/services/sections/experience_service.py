@@ -74,9 +74,13 @@ class ExperienceSectionService:
             raise ValueError(f"Section {section_id} not found")
 
     async def create_entry(
-        self, section_id: int, data: ExperienceEntryCreate
+        self, profile_id: int, section_id: int, data: ExperienceEntryCreate
     ) -> ExperienceEntryRead:
+        assert profile_id > 0, "profile_id must be a positive integer"
         assert section_id > 0, "section_id must be a positive integer"
+        section = await self._db.get_experience_section(profile_id, section_id)
+        if section is None:
+            raise ValueError(f"Section {section_id} not found")
         count = await self._db.count_entries(section_id)
         if count >= MAX_ENTRIES_PER_SECTION:
             raise EntryLimitExceededError(
@@ -93,18 +97,26 @@ class ExperienceSectionService:
         return result
 
     async def update_entry(
-        self, section_id: int, entry_id: int, data: ExperienceEntryUpdate
+        self, profile_id: int, section_id: int, entry_id: int, data: ExperienceEntryUpdate
     ) -> ExperienceEntryRead:
+        assert profile_id > 0, "profile_id must be a positive integer"
         assert section_id > 0, "section_id must be a positive integer"
         assert entry_id > 0, "entry_id must be a positive integer"
+        section = await self._db.get_experience_section(profile_id, section_id)
+        if section is None:
+            raise ValueError(f"Section {section_id} not found")
         result = await self._db.update_entry(section_id, entry_id, data)
         if result is None:
             raise ValueError(f"Entry {entry_id} not found")
         return result
 
-    async def delete_entry(self, section_id: int, entry_id: int) -> None:
+    async def delete_entry(self, profile_id: int, section_id: int, entry_id: int) -> None:
+        assert profile_id > 0, "profile_id must be a positive integer"
         assert section_id > 0, "section_id must be a positive integer"
         assert entry_id > 0, "entry_id must be a positive integer"
+        section = await self._db.get_experience_section(profile_id, section_id)
+        if section is None:
+            raise ValueError(f"Section {section_id} not found")
         deleted = await self._db.delete_entry(section_id, entry_id)
         if not deleted:
             raise ValueError(f"Entry {entry_id} not found")
