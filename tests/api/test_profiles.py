@@ -193,8 +193,19 @@ async def test_delete_profile_cascades_experience_sections(http_client: AsyncCli
     assert section_r.status_code == 201
     sid = section_r.json()["id"]
 
+    entry_r = await http_client.post(
+        f"/api/profiles/{pid}/sections/experience/{sid}/entries",
+        json={"content": "Built things"},
+    )
+    assert entry_r.status_code == 201
+
     del_r = await http_client.delete(f"/api/profiles/{pid}")
     assert del_r.status_code == 204
 
-    get_r = await http_client.get(f"/api/profiles/{pid}/sections/experience/{sid}")
-    assert get_r.status_code == 404
+    # Section must be gone
+    get_section_r = await http_client.get(f"/api/profiles/{pid}/sections/experience/{sid}")
+    assert get_section_r.status_code == 404
+
+    # List must also return 404 (profile is gone)
+    list_r = await http_client.get(f"/api/profiles/{pid}/sections/experience")
+    assert list_r.status_code == 404
