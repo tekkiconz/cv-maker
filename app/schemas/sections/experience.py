@@ -48,7 +48,7 @@ class ExperienceSectionRead(BaseModel):
 
 class ExperienceSectionUpdate(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=EXPERIENCE_TITLE_MAX_LEN)
-    organisation: str | None = None
+    organisation: str | None = Field(default=None, max_length=EXPERIENCE_ORGANISATION_MAX_LEN)
     start_date: str | None = Field(default=None, max_length=EXPERIENCE_DATE_MAX_LEN)
     end_date: str | None = Field(default=None, max_length=EXPERIENCE_DATE_MAX_LEN)
     is_enabled: bool | None = None

@@ -324,7 +324,6 @@ class SQLiteDatabaseAdapter:
             )
             await self._session.rollback()
             raise
-        await self._session.refresh(section)
         refreshed = await self._session.execute(
             select(ExperienceSection)
             .options(selectinload(ExperienceSection.entries))
