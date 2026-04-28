@@ -21,3 +21,18 @@
 - **De3: No pagination on `list_contacts`** [`app/adapters/sqlite_database.py`] — `SELECT` with no `LIMIT`; bounded by `MAX_CONTACTS_PER_PROFILE=20` today. Pagination is an Epic 2+ concern.
 - **De4: DB exceptions from `profile_exists` propagate as unhandled 500** [`app/services/contact_service.py`] — `OperationalError` (DB locked, connection lost) is not caught; same pre-existing pattern as De3 from story 1-2. Needs global exception handler story.
 - **De5: Write-time assertion gap for enum type round-trip** [`app/adapters/sqlite_database.py` create_contact] — Adapter postcondition asserts `contact.id is not None` but not that `contact.type` persisted correctly as a valid `ContactType` value. Latent risk; actual StrEnum-to-string storage is correct today.
+
+## Deferred from: code review of 2-1-experience-section-crud (2026-04-24)
+
+- **W1: Migration FK constraints have no `ON DELETE CASCADE`** [`migrations/versions/82e204f0235c_*.py`] — ORM-level cascade handles this for current usage; pre-existing project pattern. Fix requires adding `ondelete="CASCADE"` to FK columns in migration.
+- **W2: `display_order` accepts negative integers** [`app/schemas/sections/experience.py`] — No spec requirement for non-negative; no stated ordering semantics require it. Add `ge=0` constraint in a future schema hardening story.
+- **W3: `list_entries` method in service/adapter/protocol with no API route** — Spec correctly has no GET-entries endpoint. Method used in tests for state inspection. Remove or expose in a future story if a list-entries API is needed.
+- **W4: `count_sections_for_profile`/`count_entries` exposed in Protocol** [`app/interfaces/database.py`] — These are internal limit-check helpers leaked into the public protocol interface. Refactor in a future protocol cleanup story.
+- **W5: Tests directly mutate `fake_db._entries`/`fake_db._sections`** [`app/services/sections/experience_service.test.py`] — Fragile test design; bypasses public API of fake. Refactor to use `create_entry`/`create_section` in a loop if fake is ever changed.
+- **W6: `start_date`/`end_date` accept arbitrary strings with no format validation** [`app/schemas/sections/experience.py`] — ISO 8601 intent not enforced. Add `pattern=` constraint in a future schema hardening story.
+
+## Deferred from: code review of 2-1-experience-section-crud (2026-04-25)
+
+- **W7: Race condition in section/entry limit enforcement** [`app/services/sections/experience_service.py`] — `count_*` and `create_*` are separate DB round-trips with no locking. SQLite write serialization mitigates in practice; requires `SELECT FOR UPDATE` or DB-level constraint to fix, same as De1 from story 1-5.
+- **W8: `update_experience_section` post-commit re-fetch uses only `section_id` without `profile_id` scope** [`app/adapters/sqlite_database.py`] — Safe because section PK is unique, but inconsistent with the preceding scoped query. Tighten to `.where(ExperienceSection.id == section.id, ExperienceSection.profile_id == profile_id)` in a future cleanup.
+- **W9: Cascade integration test cannot directly verify `experience_entries` row deletion** [`tests/api/test_profiles.py`] — No `GET /entries/{id}` endpoint exists; ORM cascade is defined correctly on `ExperienceSection.entries`. Add verification if a list-entries API is added in a future story.

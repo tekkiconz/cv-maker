@@ -179,3 +179,33 @@ async def test_delete_profile_cascades_contacts(http_client: AsyncClient) -> Non
 
     get_r = await http_client.get(f"/api/profiles/{pid}/contacts")
     assert get_r.status_code == 404
+
+
+async def test_delete_profile_cascades_experience_sections(http_client: AsyncClient) -> None:
+    create_r = await http_client.post("/api/profiles", json={"name": "Cascade Test"})
+    assert create_r.status_code == 201
+    pid = create_r.json()["id"]
+
+    section_r = await http_client.post(
+        f"/api/profiles/{pid}/sections/experience",
+        json={"title": "Software Engineer", "organisation": "Acme", "start_date": "2020-01"},
+    )
+    assert section_r.status_code == 201
+    sid = section_r.json()["id"]
+
+    entry_r = await http_client.post(
+        f"/api/profiles/{pid}/sections/experience/{sid}/entries",
+        json={"content": "Built things"},
+    )
+    assert entry_r.status_code == 201
+
+    del_r = await http_client.delete(f"/api/profiles/{pid}")
+    assert del_r.status_code == 204
+
+    # Section must be gone
+    get_section_r = await http_client.get(f"/api/profiles/{pid}/sections/experience/{sid}")
+    assert get_section_r.status_code == 404
+
+    # List must also return 404 (profile is gone)
+    list_r = await http_client.get(f"/api/profiles/{pid}/sections/experience")
+    assert list_r.status_code == 404

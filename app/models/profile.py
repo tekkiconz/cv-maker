@@ -1,10 +1,16 @@
+from __future__ import annotations
+
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.constants.limits import PROFILE_DESCRIPTION_MAX_LEN, PROFILE_NAME_MAX_LEN
 from app.models.base import Base
+
+if TYPE_CHECKING:
+    from app.models.sections.experience import ExperienceSection
 
 
 def _utcnow() -> datetime:
@@ -27,6 +33,9 @@ class Profile(Base):
     )
     contacts: Mapped[list[ProfileContact]] = relationship(
         "ProfileContact", cascade="all, delete-orphan", back_populates="profile"
+    )
+    experience_sections: Mapped[list[ExperienceSection]] = relationship(
+        "ExperienceSection", cascade="all, delete-orphan", back_populates="profile"
     )
 
 
