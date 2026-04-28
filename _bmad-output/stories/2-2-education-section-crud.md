@@ -29,20 +29,20 @@ so that I can capture my academic background in a structured format.
   - [ ] 2.2 Add `EducationSectionRepositoryProtocol(Protocol)` with methods: `profile_exists`, `create_education_section`, `list_education_sections`, `get_education_section`, `update_education_section`, `delete_education_section`, `create_entry`, `list_entries`, `update_entry`, `delete_entry`, `count_entries`, `count_sections_for_profile`
 
 - [ ] Task 3: Create education ORM models (AC: 4)
-  - [ ] 3.1 Create `app/models/sections/__init__.py` if not present (may already exist from story 2.1)
+  - [ ] 3.1 `app/models/sections/__init__.py` **already exists** — skip creation
   - [ ] 3.2 Create `app/models/sections/education.py` with `EducationSection` and `EducationEntry` classes
-  - [ ] 3.3 Add `education_sections` relationship to `Profile` in `app/models/profile.py` (mirroring how `experience_sections` was added)
+  - [ ] 3.3 Add `education_sections` relationship to `Profile` in `app/models/profile.py` (mirroring `experience_sections` already there)
 
 - [ ] Task 4: Create Alembic migration (AC: 5)
   - [ ] 4.1 Run: `docker compose run --rm app alembic revision --autogenerate -m "add education section tables"`
   - [ ] 4.2 Apply: `docker compose run --rm app alembic upgrade head`
 
 - [ ] Task 5: Create Pydantic schemas (AC: 6)
-  - [ ] 5.1 Create `app/schemas/sections/__init__.py` if not present
+  - [ ] 5.1 `app/schemas/sections/__init__.py` **already exists** — skip creation
   - [ ] 5.2 Create `app/schemas/sections/education.py` with: `EducationSectionCreate`, `EducationSectionRead`, `EducationSectionUpdate`, `EducationEntryCreate`, `EducationEntryRead`, `EducationEntryUpdate`
 
 - [ ] Task 6: Implement `EducationSectionService` (AC: 6, 8)
-  - [ ] 6.1 Create `app/services/sections/__init__.py` if not present
+  - [ ] 6.1 `app/services/sections/__init__.py` **already exists** — skip creation
   - [ ] 6.2 Create `app/services/sections/education_service.py`
 
 - [ ] Task 7: Add education methods to `SQLiteDatabaseAdapter` (AC: 1, 2, 3)
@@ -63,16 +63,17 @@ so that I can capture my academic background in a structured format.
 
 ## Dev Notes
 
-### Dependency on Story 2.1
+### Story 2.1 Status: MERGED TO MAIN
 
-**Story 2.2 depends on Story 2.1 being merged first.** Story 2.1 establishes:
-- `app/models/sections/` directory and `__init__.py`
-- `app/services/sections/` directory and `__init__.py`
-- `app/schemas/sections/` directory and `__init__.py`
+Story 2.1 is fully merged. All scaffolding is live in `main`. The following **already exist** — do not recreate:
+- `app/models/sections/__init__.py`
+- `app/services/sections/__init__.py`
+- `app/schemas/sections/__init__.py`
+- `app/apis/sections/__init__.py` (already wires `experience_router`)
 - `SectionLimitExceededError` and `EntryLimitExceededError` in `app/exceptions.py`
-- `experience_sections` relationship on `Profile` (and the back_populates pattern to follow)
+- `experience_sections` relationship on `Profile` (the `back_populates` pattern to follow)
 
-If story 2.1 is not yet merged, check the `story-2-1-experience-crud` worktree at `.worktrees/story-2-1-experience-crud/` for reference implementations.
+Reference the actual files on `main` — **do NOT reference the old `.worktrees/story-2-1-experience-crud/` path**.
 
 ### Exact File Paths
 
@@ -85,7 +86,7 @@ If story 2.1 is not yet merged, check the `story-2-1-experience-crud` worktree a
 | `app/schemas/sections/education.py` | Create — 6 schema classes |
 | `app/services/sections/education_service.py` | Create — `EducationSectionService` |
 | `app/services/sections/education_service.test.py` | Create — full test suite |
-| `app/adapters/sqlite_database.py` | Add education CRUD methods |
+| `app/adapters/sqlite_database.py` | Add education imports + CRUD methods |
 | `app/apis/sections/education.py` | Create — FastAPI router |
 | `app/apis/sections/__init__.py` | Register `education_router` |
 | `app/apis/dependencies.py` | Add `get_education_section_service` |
@@ -111,9 +112,9 @@ If story 2.1 is not yet merged, check the `story-2-1-experience-crud` worktree a
 - `content` — str (bullet point text), max `EDUCATION_ENTRY_CONTENT_MAX_LEN`, not nullable
 - `display_order` — int, default 0, not nullable
 
-Note: `education_sections` and `experience_sections` columns are identical (same unified schema). `title` = degree, `organisation` = institution.
+`education_sections` columns are identical to `experience_sections`. `title` = degree, `organisation` = institution.
 
-### ORM Pattern (follow exactly from story 2.1)
+### ORM Pattern (copy from `app/models/sections/experience.py`)
 
 ```python
 # app/models/sections/education.py
@@ -161,14 +162,15 @@ class EducationEntry(Base):
 
 ### Profile Model Update
 
-Add `education_sections` relationship to `Profile` in `app/models/profile.py`, mirroring the `experience_sections` pattern added in story 2.1:
+`app/models/profile.py` already has `experience_sections`. Add `education_sections` the same way:
 
 ```python
-# In Profile class, inside profile.py
+# Add to TYPE_CHECKING block (already has ExperienceSection import):
 if TYPE_CHECKING:
-    from app.models.sections.education import EducationSection  # add to TYPE_CHECKING block
-    # (experience import is already there from story 2.1)
+    from app.models.sections.education import EducationSection  # add this line
+    from app.models.sections.experience import ExperienceSection  # already present
 
+# Add to Profile class body (after experience_sections):
 education_sections: Mapped[list[EducationSection]] = relationship(
     "EducationSection", cascade="all, delete-orphan", back_populates="profile"
 )
@@ -176,7 +178,7 @@ education_sections: Mapped[list[EducationSection]] = relationship(
 
 ### Protocol Interface Pattern
 
-Add `EducationSectionRepositoryProtocol` to `app/interfaces/database.py`. Same shape as `ExperienceSectionRepositoryProtocol` — just swap type names:
+Add after `ExperienceSectionRepositoryProtocol` in `app/interfaces/database.py`. The existing protocol ends at line 95. Pattern is identical — swap type names:
 
 ```python
 @runtime_checkable
@@ -195,36 +197,125 @@ class EducationSectionRepositoryProtocol(Protocol):
     async def count_sections_for_profile(self, profile_id: int) -> int: ...
 ```
 
-Note: `count_sections_for_profile` counts ALL section types combined (not just education) to enforce `MAX_SECTIONS_PER_PROFILE`. The experience adapter implementation queries `experience_sections` — the education implementation must query across all section tables, or share the same counter. Simplest approach: the education adapter's `count_sections_for_profile` also counts only education sections for now (this is acceptable in v1 where each section type has its own limit check; the global limit is a future concern). Match whatever story 2.1 implemented.
+Add to the `TYPE_CHECKING` block at the top of `database.py`:
+```python
+from app.schemas.sections.education import (
+    EducationEntryCreate,
+    EducationEntryRead,
+    EducationEntryUpdate,
+    EducationSectionCreate,
+    EducationSectionRead,
+    EducationSectionUpdate,
+)
+```
+
+### Schema Pattern
+
+`app/schemas/sections/education.py` — mirror `app/schemas/sections/experience.py` exactly. Class names change; field names are identical (title, organisation, start_date, end_date). Use `EDUCATION_*` constants.
+
+Key rule: `model_config = ConfigDict(from_attributes=True)` on `EducationSectionRead` and `EducationEntryRead` only (not Create/Update).
 
 ### Service Pattern
 
-`EducationSectionService` is a direct rename of `ExperienceSectionService`. All method names change `experience` → `education`. Take `EducationSectionRepositoryProtocol` in `__init__`. Same limits, same assertion patterns, same error types.
+`EducationSectionService` is a direct rename of `ExperienceSectionService` (`app/services/sections/experience_service.py`). All method names change `experience` → `education`. Constructor takes `EducationSectionRepositoryProtocol`. Same limits, same assertion patterns, same error types.
+
+Same Tiger Style:
+- `assert profile_id > 0` on all methods
+- `assert section_id > 0` on section/entry ops
+- `assert entry_id > 0` on entry ops
+- `assert result.profile_id == profile_id` after section create
+- `assert result.section_id == section_id` after entry create
 
 ### SQLiteDatabaseAdapter Pattern
 
-Add education methods to `SQLiteDatabaseAdapter` in `app/adapters/sqlite_database.py`. Follow the exact same pattern as experience methods:
-- `assert profile_id > 0` / `assert section_id > 0` at entry
-- `logger.exception(...)` before `raise` in every `except Exception` block
-- `await self._session.rollback()` in except blocks
-- `await self._session.refresh(obj)` after commit
-- `assert obj.id is not None` after insert
+**Add imports at top of `app/adapters/sqlite_database.py`** alongside existing experience imports:
+```python
+from app.models.sections.education import EducationEntry, EducationSection
+from app.schemas.sections.education import (
+    EducationEntryCreate,
+    EducationEntryRead,
+    EducationEntryUpdate,
+    EducationSectionCreate,
+    EducationSectionRead,
+    EducationSectionUpdate,
+)
+```
 
-Import `EducationSection`, `EducationEntry` models and education schemas at top of file.
+**Critical adapter patterns** (confirmed from actual merged code in `sqlite_database.py`):
+
+1. **`_section_to_read` static method** — create and list use a dict-based constructor, NOT `model_validate(orm_obj)` directly:
+   ```python
+   @staticmethod
+   def _education_section_to_read(section: EducationSection) -> EducationSectionRead:
+       return EducationSectionRead.model_validate({
+           "id": section.id,
+           "profile_id": section.profile_id,
+           "title": section.title,
+           "organisation": section.organisation,
+           "start_date": section.start_date,
+           "end_date": section.end_date,
+           "is_enabled": section.is_enabled,
+           "display_order": section.display_order,
+           "created_at": section.created_at,
+           "updated_at": section.updated_at,
+           "entries": [],
+       })
+   ```
+
+2. **`get_education_section`** — uses `selectinload` for eager loading entries, then `model_validate(orm_obj)` directly (ORM object, `from_attributes=True` handles it):
+   ```python
+   stmt = (
+       select(EducationSection)
+       .options(selectinload(EducationSection.entries))
+       .where(EducationSection.id == section_id, EducationSection.profile_id == profile_id)
+   )
+   result = await self._session.execute(stmt)
+   section = result.scalar_one_or_none()
+   if section is None:
+       return None
+   return EducationSectionRead.model_validate(section)
+   ```
+
+3. **`update_education_section`** — after commit, re-fetches with `selectinload` to return populated entries:
+   ```python
+   refreshed = await self._session.execute(
+       select(EducationSection)
+       .options(selectinload(EducationSection.entries))
+       .where(EducationSection.id == section.id)
+   )
+   return EducationSectionRead.model_validate(refreshed.scalar_one())
+   ```
+
+4. **`count_sections_for_profile`** — counts only `education_sections` (same as experience counts only its own table):
+   ```python
+   result = await self._session.execute(
+       select(func.count()).select_from(EducationSection).where(EducationSection.profile_id == profile_id)
+   )
+   count = result.scalar() or 0
+   assert count >= 0, "count_sections_for_profile must return non-negative"
+   return count
+   ```
+
+5. **`profile_exists`** — already implemented on `SQLiteDatabaseAdapter` at line 105; education protocol reuses it (no new implementation needed, `SQLiteDatabaseAdapter` already satisfies the protocol for this method).
+
+6. Every `except Exception` block: `logger.exception(...)` then `await self._session.rollback()` then `raise`.
 
 ### Router Pattern
 
-`app/apis/sections/education.py` — identical to `experience.py`, replace experience with education:
+`app/apis/sections/education.py` — identical to `app/apis/sections/experience.py`. Rename experience → education:
 - Prefix: `/api/profiles/{profile_id}/sections/education`
 - Tags: `["education"]`
-- Type aliases: reuse `ProfileId = Annotated[int, Path(ge=1)]` etc.
+- `ServiceDep = Annotated[EducationSectionService, Depends(get_education_section_service)]`
 - `SectionLimitExceededError` → HTTP 422; `ValueError` → HTTP 404
 
 ### Auto-Registration
 
-`app/apis/sections/__init__.py` after story 2.1 contains:
+`app/apis/sections/__init__.py` currently contains:
 ```python
+from fastapi import APIRouter
 from app.apis.sections.experience import router as experience_router
+
+sections_router = APIRouter()
 sections_router.include_router(experience_router)
 ```
 
@@ -236,7 +327,7 @@ sections_router.include_router(education_router)
 
 ### DI Wiring
 
-`app/apis/dependencies.py` — add:
+`app/apis/dependencies.py` — add alongside existing `get_experience_section_service`:
 ```python
 from app.services.sections.education_service import EducationSectionService
 
@@ -247,13 +338,11 @@ async def get_education_section_service(
     return EducationSectionService(adapter)
 ```
 
-### Schema Pattern
-
-`app/schemas/sections/education.py` — mirror `experience.py` exactly. Key difference: field names are identical (title, organisation, start_date, end_date) — just the class names change. Use `EDUCATION_*` constants. `ExperienceSectionRead.entries` becomes `EducationSectionRead.entries: list[EducationEntryRead] = []`.
-
 ### Unit Test Pattern
 
-`app/services/sections/education_service.test.py` — `FakeEducationSectionRepository` mirrors `FakeExperienceSectionRepository`. Test suite must cover:
+`app/services/sections/education_service.test.py` — `FakeEducationSectionRepository` mirrors `FakeExperienceSectionRepository` in `app/services/sections/experience_service.test.py`. Read that file as the canonical template.
+
+Test suite must cover:
 - Section CRUD happy paths
 - Section limit exceeded raises `SectionLimitExceededError`
 - Entry CRUD happy paths
@@ -275,7 +364,7 @@ Every adapter method:
 
 ### Existing Errors to Reuse
 
-`app/exceptions.py` after story 2.1 contains:
+`app/exceptions.py` contains:
 ```python
 class ContactLimitExceededError(ValueError): pass
 class SectionLimitExceededError(ValueError): pass
@@ -292,7 +381,7 @@ docker compose run --rm app alembic revision --autogenerate -m "add education se
 docker compose run --rm app alembic upgrade head
 ```
 
-The migration must create both `education_sections` and `education_entries` in one revision. Verify the generated file references `profiles.id` as FK target for `education_sections.profile_id`.
+Migration must create both `education_sections` and `education_entries` in one revision. Verify the generated file references `profiles.id` as FK target for `education_sections.profile_id`.
 
 ### Common Mistakes to Avoid
 
@@ -301,34 +390,32 @@ The migration must create both `education_sections` and `education_entries` in o
 3. **Do NOT register the router directly in `main.py`** — only in `apis/sections/__init__.py`.
 4. **Do NOT use `os.environ` in any new file** — all config via `app/configs/settings.py`.
 5. **Do NOT forget `model_config = ConfigDict(from_attributes=True)`** on `EducationSectionRead` and `EducationEntryRead`.
-6. **Do NOT omit `list_entries` endpoint from router** — it was not in story 2.2 AC but the service implements it and tests call it; omitting the GET endpoint is fine for now but ensure the service method exists.
+6. **Do NOT use `model_validate(orm_obj)` in `_education_section_to_read`** — use the dict-based approach (matches experience pattern).
 7. **Do NOT swallow exceptions** — every `except Exception` block must `logger.exception(...)` then `raise`.
+8. **Do NOT skip `selectinload`** in `get_education_section` and `update_education_section` — entries will be empty without it.
 
-### Project Structure Notes
+### Project Structure (post story 2.1 merge)
 
-After story 2.1, the following directories exist:
-- `app/models/sections/` — contains `__init__.py`, `experience.py`
-- `app/services/sections/` — contains `__init__.py`, `experience_service.py`, `experience_service.test.py`
-- `app/schemas/sections/` — contains `__init__.py`, `experience.py`
-- `app/apis/sections/` — contains `__init__.py`, `experience.py`
+These directories and files exist on `main`:
+- `app/models/sections/` — `__init__.py`, `experience.py`
+- `app/services/sections/` — `__init__.py`, `experience_service.py`, `experience_service.test.py`
+- `app/schemas/sections/` — `__init__.py`, `experience.py`
+- `app/apis/sections/` — `__init__.py`, `experience.py`
 
-This story adds parallel `education.py` files to each directory. No new directories needed.
+This story adds parallel `education.py` (and `education_service.py`, `education_service.test.py`) files. No new directories needed.
 
-### References
+### References (actual paths on main)
 
-- [Source: _bmad-output/planning/epics.md § Story 2.2]
-- [Source: _bmad-output/planning/epics.md § Story 2.1 — canonical pattern for all section stories]
-- [Source: .worktrees/story-2-1-experience-crud/app/models/sections/experience.py — ORM model pattern]
-- [Source: .worktrees/story-2-1-experience-crud/app/services/sections/experience_service.py — service pattern]
-- [Source: .worktrees/story-2-1-experience-crud/app/services/sections/experience_service.test.py — test pattern]
-- [Source: .worktrees/story-2-1-experience-crud/app/apis/sections/experience.py — router pattern]
-- [Source: .worktrees/story-2-1-experience-crud/app/apis/sections/__init__.py — auto-registration pattern]
-- [Source: .worktrees/story-2-1-experience-crud/app/apis/dependencies.py — DI wiring pattern]
-- [Source: .worktrees/story-2-1-experience-crud/app/interfaces/database.py — protocol pattern]
-- [Source: .worktrees/story-2-1-experience-crud/app/schemas/sections/experience.py — schema pattern]
-- [Source: .worktrees/story-2-1-experience-crud/app/constants/limits.py — constants pattern]
-- [Source: app/adapters/sqlite_database.py — adapter conventions (logging, assert, rollback)]
-- [Source: app/constants/limits.py — existing constants (MAX_ENTRIES_PER_SECTION, MAX_SECTIONS_PER_PROFILE)]
+- `app/models/sections/experience.py` — ORM model pattern
+- `app/services/sections/experience_service.py` — service pattern
+- `app/services/sections/experience_service.test.py` — test pattern (FakeRepo + all test cases)
+- `app/apis/sections/experience.py` — router pattern
+- `app/apis/sections/__init__.py` — auto-registration pattern
+- `app/apis/dependencies.py` — DI wiring pattern
+- `app/interfaces/database.py` — protocol pattern (ExperienceSectionRepositoryProtocol at line ~55)
+- `app/schemas/sections/experience.py` — schema pattern
+- `app/constants/limits.py` — existing constants
+- `app/adapters/sqlite_database.py` — adapter (experience methods ~line 214–452; `profile_exists` at line 105)
 
 ## Dev Agent Record
 
@@ -339,5 +426,7 @@ claude-sonnet-4-6
 ### Debug Log References
 
 ### Completion Notes List
+
+- Story 2.1 merged to main 2026-04-28; story reevaluated and all worktree references removed
 
 ### File List
