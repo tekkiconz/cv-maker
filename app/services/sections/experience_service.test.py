@@ -64,10 +64,14 @@ class FakeExperienceSectionRepository:
     async def get_experience_section(
         self, profile_id: int, section_id: int
     ) -> ExperienceSectionRead | None:
-        return next(
+        section = next(
             (s for s in self._sections if s.id == section_id and s.profile_id == profile_id),
             None,
         )
+        if section is None:
+            return None
+        entries = [e for e in self._entries if e.section_id == section_id]
+        return section.model_copy(update={"entries": entries})
 
     async def update_experience_section(
         self, profile_id: int, section_id: int, data: ExperienceSectionUpdate
@@ -231,7 +235,9 @@ async def test_delete_experience_section_not_found_raises(
 
 async def test_create_entry_happy_path(service: ExperienceSectionService) -> None:
     section = await service.create_experience_section(1, ExperienceSectionCreate(title="Job"))
-    result = await service.create_entry(1, section.id, ExperienceEntryCreate(content="Led a team of 5"))
+    result = await service.create_entry(
+        1, section.id, ExperienceEntryCreate(content="Led a team of 5")
+    )
     assert result.id is not None
     assert result.section_id == section.id
     assert result.content == "Led a team of 5"
@@ -252,7 +258,9 @@ async def test_create_entry_limit_exceeded_raises(
     section = await service.create_experience_section(1, ExperienceSectionCreate(title="Job"))
     for i in range(MAX_ENTRIES_PER_SECTION):
         fake_db._entries.append(
-            ExperienceEntryRead(id=i + 1, section_id=section.id, content=f"entry {i}", display_order=i)
+            ExperienceEntryRead(
+                id=i + 1, section_id=section.id, content=f"entry {i}", display_order=i
+            )
         )
     fake_db._next_entry_id = MAX_ENTRIES_PER_SECTION + 1
 
@@ -288,8 +296,12 @@ async def test_create_section_limit_exceeded_raises(
 
 async def test_update_entry_happy_path(service: ExperienceSectionService) -> None:
     section = await service.create_experience_section(1, ExperienceSectionCreate(title="Job"))
-    created = await service.create_entry(1, section.id, ExperienceEntryCreate(content="old content"))
-    result = await service.update_entry(1, section.id, created.id, ExperienceEntryUpdate(content="new content"))
+    created = await service.create_entry(
+        1, section.id, ExperienceEntryCreate(content="old content")
+    )
+    result = await service.update_entry(
+        1, section.id, created.id, ExperienceEntryUpdate(content="new content")
+    )
     assert result.content == "new content"
 
 
@@ -435,6 +447,23 @@ async def test_tiger_delete_entry_entry_id_zero_raises(
 ) -> None:
     with pytest.raises(AssertionError):
         await service.delete_entry(1, 1, 0)
+
+
+async def test_tiger_create_entry_profile_id_zero_raises(
+    service: ExperienceSectionService,
+) -> None:
+    with pytest.raises(AssertionError):
+        await service.create_entry(0, 1, ExperienceEntryCreate(content="x"))
+
+
+async def test_get_experience_section_returns_populated_entries(
+    service: ExperienceSectionService,
+) -> None:
+    section = await service.create_experience_section(1, ExperienceSectionCreate(title="Job"))
+    await service.create_entry(1, section.id, ExperienceEntryCreate(content="Built things"))
+    result = await service.get_experience_section(1, section.id)
+    assert len(result.entries) == 1
+    assert result.entries[0].content == "Built things"
 
 
 async def test_list_experience_sections_entries_not_populated() -> None:

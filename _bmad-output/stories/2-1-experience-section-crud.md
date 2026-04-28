@@ -1,6 +1,6 @@
 # Story 2.1: Experience Section CRUD
 
-Status: review
+Status: done
 
 ## Story
 
@@ -485,6 +485,11 @@ From Story 1.4 (delete profile):
 - [x] [Review][Defer] W4: `count_sections_for_profile`/`count_entries` exposed in Protocol — design concern not spec-violating — deferred, pre-existing
 - [x] [Review][Defer] W5: Tests directly mutate `fake_db._entries` to seed limit scenarios — fragile test design — deferred, pre-existing pattern
 - [x] [Review][Defer] W6: `start_date`/`end_date` accept arbitrary strings with no format validation — design decision, out of spec scope — deferred, pre-existing
+- [x] [Review][Patch] P9: `FakeExperienceSectionRepository.get_experience_section` doesn't hydrate entries from `_entries` — AC3 unit test cannot verify GET single returns populated entries [`app/services/sections/experience_service.test.py`]
+- [x] [Review][Patch] P10: No Tiger Style test for `create_entry(profile_id=0)` AssertionError — assertion exists in code but is untested [`app/services/sections/experience_service.test.py`]
+- [x] [Review][Defer] W7: Race condition in section/entry limit enforcement — `count_*` and `create_*` are separate DB round-trips; SQLite serializes writes so safe now, fragile if migrated to PostgreSQL [`app/services/sections/experience_service.py`] — deferred, pre-existing pattern
+- [x] [Review][Defer] W8: `update_experience_section` post-commit re-fetch uses only `section_id` without `profile_id` scope — safe (PK unique), inconsistent defensive pattern [`app/adapters/sqlite_database.py`] — deferred
+- [x] [Review][Defer] W9: Cascade test doesn't directly verify `experience_entries` row deletion — no `GET /entries/{id}` endpoint to assert against; ORM cascade defined correctly [`tests/api/test_profiles.py`] — deferred
 
 ## Dev Agent Record
 

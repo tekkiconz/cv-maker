@@ -30,3 +30,9 @@
 - **W4: `count_sections_for_profile`/`count_entries` exposed in Protocol** [`app/interfaces/database.py`] — These are internal limit-check helpers leaked into the public protocol interface. Refactor in a future protocol cleanup story.
 - **W5: Tests directly mutate `fake_db._entries`/`fake_db._sections`** [`app/services/sections/experience_service.test.py`] — Fragile test design; bypasses public API of fake. Refactor to use `create_entry`/`create_section` in a loop if fake is ever changed.
 - **W6: `start_date`/`end_date` accept arbitrary strings with no format validation** [`app/schemas/sections/experience.py`] — ISO 8601 intent not enforced. Add `pattern=` constraint in a future schema hardening story.
+
+## Deferred from: code review of 2-1-experience-section-crud (2026-04-25)
+
+- **W7: Race condition in section/entry limit enforcement** [`app/services/sections/experience_service.py`] — `count_*` and `create_*` are separate DB round-trips with no locking. SQLite write serialization mitigates in practice; requires `SELECT FOR UPDATE` or DB-level constraint to fix, same as De1 from story 1-5.
+- **W8: `update_experience_section` post-commit re-fetch uses only `section_id` without `profile_id` scope** [`app/adapters/sqlite_database.py`] — Safe because section PK is unique, but inconsistent with the preceding scoped query. Tighten to `.where(ExperienceSection.id == section.id, ExperienceSection.profile_id == profile_id)` in a future cleanup.
+- **W9: Cascade integration test cannot directly verify `experience_entries` row deletion** [`tests/api/test_profiles.py`] — No `GET /entries/{id}` endpoint exists; ORM cascade is defined correctly on `ExperienceSection.entries`. Add verification if a list-entries API is added in a future story.
