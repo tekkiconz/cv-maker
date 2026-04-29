@@ -10,6 +10,7 @@ from app.constants.limits import PROFILE_DESCRIPTION_MAX_LEN, PROFILE_NAME_MAX_L
 from app.models.base import Base
 
 if TYPE_CHECKING:
+    from app.models.sections.education import EducationSection
     from app.models.sections.experience import ExperienceSection
 
 
@@ -36,6 +37,9 @@ class Profile(Base):
     )
     experience_sections: Mapped[list[ExperienceSection]] = relationship(
         "ExperienceSection", cascade="all, delete-orphan", back_populates="profile"
+    )
+    education_sections: Mapped[list[EducationSection]] = relationship(
+        "EducationSection", cascade="all, delete-orphan", back_populates="profile"
     )
 
 
