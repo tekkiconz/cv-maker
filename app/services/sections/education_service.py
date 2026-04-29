@@ -23,7 +23,7 @@ class EducationSectionService:
         assert profile_id > 0, "profile_id must be a positive integer"
         if not await self._db.profile_exists(profile_id):
             raise ValueError(f"Profile {profile_id} not found")
-        count = await self._db.count_sections_for_profile(profile_id)
+        count = await self._db.count_education_sections_for_profile(profile_id)
         if count >= MAX_SECTIONS_PER_PROFILE:
             raise SectionLimitExceededError(
                 f"profile {profile_id} has {count} sections; max {MAX_SECTIONS_PER_PROFILE}"

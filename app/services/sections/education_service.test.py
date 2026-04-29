@@ -32,7 +32,7 @@ class FakeEducationSectionRepository:
     async def profile_exists(self, profile_id: int) -> bool:
         return profile_id in self._profiles
 
-    async def count_sections_for_profile(self, profile_id: int) -> int:
+    async def count_education_sections_for_profile(self, profile_id: int) -> int:
         return sum(1 for s in self._sections if s.profile_id == profile_id)
 
     async def create_education_section(
