@@ -9,6 +9,7 @@ from app.services.contact_service import ContactService
 from app.services.profile_service import ProfileService
 from app.services.sections.education_service import EducationSectionService
 from app.services.sections.experience_service import ExperienceSectionService
+from app.services.sections.projects_service import ProjectSectionService
 
 
 async def get_db_session() -> AsyncGenerator[AsyncSession]:
@@ -42,3 +43,10 @@ async def get_education_section_service(
 ) -> EducationSectionService:
     adapter = make_sqlite_adapter(session)
     return EducationSectionService(adapter)
+
+
+async def get_project_section_service(
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+) -> ProjectSectionService:
+    adapter = make_sqlite_adapter(session)
+    return ProjectSectionService(adapter)
