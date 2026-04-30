@@ -76,6 +76,8 @@ class EducationSectionService:
     ) -> EducationEntryRead:
         assert profile_id > 0, "profile_id must be a positive integer"
         assert section_id > 0, "section_id must be a positive integer"
+        if not await self._db.profile_exists(profile_id):
+            raise ValueError(f"Profile {profile_id} not found")
         section = await self._db.get_education_section(profile_id, section_id)
         if section is None:
             raise ValueError(f"Section {section_id} not found")
@@ -88,8 +90,14 @@ class EducationSectionService:
         assert result.section_id == section_id, "returned entry section_id must match request"
         return result
 
-    async def list_entries(self, section_id: int) -> list[EducationEntryRead]:
+    async def list_entries(self, profile_id: int, section_id: int) -> list[EducationEntryRead]:
+        assert profile_id > 0, "profile_id must be a positive integer"
         assert section_id > 0, "section_id must be a positive integer"
+        if not await self._db.profile_exists(profile_id):
+            raise ValueError(f"Profile {profile_id} not found")
+        section = await self._db.get_education_section(profile_id, section_id)
+        if section is None:
+            raise ValueError(f"Section {section_id} not found")
         result = await self._db.list_education_entries(section_id)
         assert isinstance(result, list), "list_entries must return a list"
         return result

@@ -315,7 +315,7 @@ async def test_delete_entry(service: EducationSectionService) -> None:
     section = await service.create_education_section(1, EducationSectionCreate(title="BSc"))
     created = await service.create_entry(1, section.id, EducationEntryCreate(content="bullet"))
     await service.delete_entry(1, section.id, created.id)
-    entries = await service.list_entries(section.id)
+    entries = await service.list_entries(1, section.id)
     assert all(e.id != created.id for e in entries)
 
 
@@ -397,6 +397,16 @@ async def test_delete_section_profile_not_found_raises(service: EducationSection
         await service.delete_education_section(99, 1)
 
 
+async def test_create_entry_profile_not_found_raises(service: EducationSectionService) -> None:
+    with pytest.raises(ValueError, match="Profile 99 not found"):
+        await service.create_entry(99, 1, EducationEntryCreate(content="x"))
+
+
+async def test_list_entries_profile_not_found_raises(service: EducationSectionService) -> None:
+    with pytest.raises(ValueError, match="Profile 99 not found"):
+        await service.list_entries(99, 1)
+
+
 # --- Tiger Style assertion failures ---
 
 
@@ -454,6 +464,20 @@ async def test_tiger_create_entry_profile_id_zero_raises(
 ) -> None:
     with pytest.raises(AssertionError):
         await service.create_entry(0, 1, EducationEntryCreate(content="x"))
+
+
+async def test_tiger_list_sections_profile_id_zero_raises(
+    service: EducationSectionService,
+) -> None:
+    with pytest.raises(AssertionError):
+        await service.list_education_sections(0)
+
+
+async def test_tiger_list_entries_section_id_zero_raises(
+    service: EducationSectionService,
+) -> None:
+    with pytest.raises(AssertionError):
+        await service.list_entries(1, 0)
 
 
 async def test_get_education_section_returns_populated_entries(

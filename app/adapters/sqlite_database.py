@@ -577,7 +577,7 @@ class SQLiteDatabaseAdapter:
         refreshed = await self._session.execute(
             select(EducationSection)
             .options(selectinload(EducationSection.entries))
-            .where(EducationSection.id == section.id)
+            .where(EducationSection.id == section.id, EducationSection.profile_id == profile_id)
         )
         return EducationSectionRead.model_validate(refreshed.scalar_one())
 

@@ -33,6 +33,15 @@
 
 ## Deferred from: code review of 2-1-experience-section-crud (2026-04-25)
 
+## Deferred from: code review of 2-2-education-section-crud (2026-04-30)
+
+- **W1: Router collapses profile-not-found and section-not-found into same 404** [`app/apis/sections/education.py`] — `except ValueError` catches both error types and emits identical `"Section not found"` / `"Profile not found"` responses. Pre-existing pattern from experience router. Fix requires typed exception subclasses or structured error payloads.
+- **W2: `_education_section_to_read` hardcodes `entries=[]` with no usage guard** [`app/adapters/sqlite_database.py`] — Helper always emits empty entries list; safe for list endpoint but silently wrong if misapplied to a path that expects populated entries. Pre-existing pattern from experience. Add a docstring or `assert` guard if reused.
+- **W3: No FK column indexes on `education_sections.profile_id` / `education_entries.section_id`** [`migrations/versions/c8dba486b875_*.py`] — SQLite does not auto-index FK columns; all list/count queries do full table scans. Pre-existing from experience migration. Add explicit `op.create_index` in a future migration.
+- **W4: `organisation` field allows empty string on create/update** [`app/schemas/sections/education.py`] — `organisation: str | None` has no `min_length=1`; `""` and `None` are stored differently but semantically equivalent. Add `min_length=1` when empty string should be treated as absent.
+- **W5: No integration tests for education adapter methods** — `get_education_section` with `selectinload`, two-query `update_education_section`, and cascade delete have no real-database coverage. Pre-existing gap from experience.
+- **W6: No API-level tests for education router** — FastAPI routing, response codes, and error mapping are entirely untested at HTTP boundary. Pre-existing gap from experience.
+
 - **W7: Race condition in section/entry limit enforcement** [`app/services/sections/experience_service.py`] — `count_*` and `create_*` are separate DB round-trips with no locking. SQLite write serialization mitigates in practice; requires `SELECT FOR UPDATE` or DB-level constraint to fix, same as De1 from story 1-5.
 - **W8: `update_experience_section` post-commit re-fetch uses only `section_id` without `profile_id` scope** [`app/adapters/sqlite_database.py`] — Safe because section PK is unique, but inconsistent with the preceding scoped query. Tighten to `.where(ExperienceSection.id == section.id, ExperienceSection.profile_id == profile_id)` in a future cleanup.
 - **W9: Cascade integration test cannot directly verify `experience_entries` row deletion** [`tests/api/test_profiles.py`] — No `GET /entries/{id}` endpoint exists; ORM cascade is defined correctly on `ExperienceSection.entries`. Add verification if a list-entries API is added in a future story.

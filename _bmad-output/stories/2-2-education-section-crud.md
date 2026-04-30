@@ -1,6 +1,6 @@
 # Story 2.2: Education Section CRUD
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -21,45 +21,45 @@ so that I can capture my academic background in a structured format.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add education string-length constants (AC: 4)
-  - [ ] 1.1 In `app/constants/limits.py`, add: `EDUCATION_TITLE_MAX_LEN: Final[int] = 255`, `EDUCATION_ORGANISATION_MAX_LEN: Final[int] = 255`, `EDUCATION_DATE_MAX_LEN: Final[int] = 20`, `EDUCATION_ENTRY_CONTENT_MAX_LEN: Final[int] = 1000`
+- [x] Task 1: Add education string-length constants (AC: 4)
+  - [x] 1.1 In `app/constants/limits.py`, add: `EDUCATION_TITLE_MAX_LEN: Final[int] = 255`, `EDUCATION_ORGANISATION_MAX_LEN: Final[int] = 255`, `EDUCATION_DATE_MAX_LEN: Final[int] = 20`, `EDUCATION_ENTRY_CONTENT_MAX_LEN: Final[int] = 1000`
 
-- [ ] Task 2: Add `EducationSectionRepositoryProtocol` to `app/interfaces/database.py` (AC: 6)
-  - [ ] 2.1 Add TYPE_CHECKING imports for all education schemas
-  - [ ] 2.2 Add `EducationSectionRepositoryProtocol(Protocol)` with methods: `profile_exists`, `create_education_section`, `list_education_sections`, `get_education_section`, `update_education_section`, `delete_education_section`, `create_entry`, `list_entries`, `update_entry`, `delete_entry`, `count_entries`, `count_sections_for_profile`
+- [x] Task 2: Add `EducationSectionRepositoryProtocol` to `app/interfaces/database.py` (AC: 6)
+  - [x] 2.1 Add TYPE_CHECKING imports for all education schemas
+  - [x] 2.2 Add `EducationSectionRepositoryProtocol(Protocol)` with methods: `profile_exists`, `create_education_section`, `list_education_sections`, `get_education_section`, `update_education_section`, `delete_education_section`, `create_entry`, `list_entries`, `update_entry`, `delete_entry`, `count_entries`, `count_sections_for_profile`
 
-- [ ] Task 3: Create education ORM models (AC: 4)
-  - [ ] 3.1 `app/models/sections/__init__.py` **already exists** — skip creation
-  - [ ] 3.2 Create `app/models/sections/education.py` with `EducationSection` and `EducationEntry` classes
-  - [ ] 3.3 Add `education_sections` relationship to `Profile` in `app/models/profile.py` (mirroring `experience_sections` already there)
+- [x] Task 3: Create education ORM models (AC: 4)
+  - [x] 3.1 `app/models/sections/__init__.py` **already exists** — skip creation
+  - [x] 3.2 Create `app/models/sections/education.py` with `EducationSection` and `EducationEntry` classes
+  - [x] 3.3 Add `education_sections` relationship to `Profile` in `app/models/profile.py` (mirroring `experience_sections` already there)
 
-- [ ] Task 4: Create Alembic migration (AC: 5)
-  - [ ] 4.1 Run: `docker compose run --rm app alembic revision --autogenerate -m "add education section tables"`
-  - [ ] 4.2 Apply: `docker compose run --rm app alembic upgrade head`
+- [x] Task 4: Create Alembic migration (AC: 5)
+  - [x] 4.1 Run: `docker compose run --rm app alembic revision --autogenerate -m "add education section tables"`
+  - [x] 4.2 Apply: `docker compose run --rm app alembic upgrade head`
 
-- [ ] Task 5: Create Pydantic schemas (AC: 6)
-  - [ ] 5.1 `app/schemas/sections/__init__.py` **already exists** — skip creation
-  - [ ] 5.2 Create `app/schemas/sections/education.py` with: `EducationSectionCreate`, `EducationSectionRead`, `EducationSectionUpdate`, `EducationEntryCreate`, `EducationEntryRead`, `EducationEntryUpdate`
+- [x] Task 5: Create Pydantic schemas (AC: 6)
+  - [x] 5.1 `app/schemas/sections/__init__.py` **already exists** — skip creation
+  - [x] 5.2 Create `app/schemas/sections/education.py` with: `EducationSectionCreate`, `EducationSectionRead`, `EducationSectionUpdate`, `EducationEntryCreate`, `EducationEntryRead`, `EducationEntryUpdate`
 
-- [ ] Task 6: Implement `EducationSectionService` (AC: 6, 8)
-  - [ ] 6.1 `app/services/sections/__init__.py` **already exists** — skip creation
-  - [ ] 6.2 Create `app/services/sections/education_service.py`
+- [x] Task 6: Implement `EducationSectionService` (AC: 6, 8)
+  - [x] 6.1 `app/services/sections/__init__.py` **already exists** — skip creation
+  - [x] 6.2 Create `app/services/sections/education_service.py`
 
-- [ ] Task 7: Add education methods to `SQLiteDatabaseAdapter` (AC: 1, 2, 3)
-  - [ ] 7.1 Add all `EducationSectionRepositoryProtocol` method implementations to `app/adapters/sqlite_database.py`
+- [x] Task 7: Add education methods to `SQLiteDatabaseAdapter` (AC: 1, 2, 3)
+  - [x] 7.1 Add all `EducationSectionRepositoryProtocol` method implementations to `app/adapters/sqlite_database.py`
 
-- [ ] Task 8: Create unit tests (AC: 6)
-  - [ ] 8.1 Create `app/services/sections/education_service.test.py` with `FakeEducationSectionRepository` and full test coverage
+- [x] Task 8: Create unit tests (AC: 6)
+  - [x] 8.1 Create `app/services/sections/education_service.test.py` with `FakeEducationSectionRepository` and full test coverage
 
-- [ ] Task 9: Create router and wire DI (AC: 7)
-  - [ ] 9.1 Create `app/apis/sections/education.py`
-  - [ ] 9.2 Add `from app.apis.sections.education import router as education_router` and `sections_router.include_router(education_router)` to `app/apis/sections/__init__.py`
-  - [ ] 9.3 Add `get_education_section_service` to `app/apis/dependencies.py`
+- [x] Task 9: Create router and wire DI (AC: 7)
+  - [x] 9.1 Create `app/apis/sections/education.py`
+  - [x] 9.2 Add `from app.apis.sections.education import router as education_router` and `sections_router.include_router(education_router)` to `app/apis/sections/__init__.py`
+  - [x] 9.3 Add `get_education_section_service` to `app/apis/dependencies.py`
 
-- [ ] Task 10: Verify (AC: all)
-  - [ ] 10.1 Run `make test-local` — all tests pass
-  - [ ] 10.2 Run `make lint-local` — clean
-  - [ ] 10.3 Run `make typecheck-local` — no errors
+- [x] Task 10: Verify (AC: all)
+  - [x] 10.1 Run `make test-local` — all tests pass
+  - [x] 10.2 Run `make lint-local` — clean
+  - [x] 10.3 Run `make typecheck-local` — no errors
 
 ## Dev Notes
 
@@ -428,5 +428,22 @@ claude-sonnet-4-6
 ### Completion Notes List
 
 - Story 2.1 merged to main 2026-04-28; story reevaluated and all worktree references removed
+
+### Review Findings
+
+- [x] [Review][Patch] `list_entries` missing `profile_id` parameter and ownership checks — violates AC 8 Tiger Style; raises no profile-not-found error; cross-profile entry enumeration possible if endpoint added [`app/services/sections/education_service.py:91-95`]
+- [x] [Review][Patch] `create_entry` missing explicit `profile_exists` check — when profile does not exist, error message says "Section X not found" not "Profile X not found"; violates spec requirement "Profile-not-found raises ValueError on every service method" [`app/services/sections/education_service.py:74-89`]
+- [x] [Review][Patch] Missing Tiger Style zero-id assertion tests for `list_education_sections` (profile_id=0) and `list_entries` (section_id=0) — both assertions exist in code, both tests absent [`app/services/sections/education_service.test.py`]
+- [x] [Review][Patch] `update_education_section` post-commit re-fetch missing `profile_id` filter — `.where(EducationSection.id == section.id)` should also include `EducationSection.profile_id == profile_id` for consistency and safety [`app/adapters/sqlite_database.py`]
+- [x] [Review][Defer] Router collapses profile-not-found and section-not-found `ValueError` into same 404 — pre-existing pattern from experience router [`app/apis/sections/education.py`] — deferred, pre-existing
+- [x] [Review][Defer] `create_entry` check-then-act race on `MAX_ENTRIES_PER_SECTION` — pre-existing (see W7 in deferred-work.md) — deferred, pre-existing
+- [x] [Review][Defer] `display_order` accepts negative integers — pre-existing (see W2 in deferred-work.md) — deferred, pre-existing
+- [x] [Review][Defer] `_education_section_to_read` hardcodes `entries=[]` with no guard — pre-existing pattern from experience — deferred, pre-existing
+- [x] [Review][Defer] `SectionLimitExceededError`/`EntryLimitExceededError` subclass `ValueError` — fragile exception hierarchy; pre-existing design in `app/exceptions.py` — deferred, pre-existing
+- [x] [Review][Defer] No indexes on `education_sections.profile_id` or `education_entries.section_id` in migration — full table scans on all list/count queries; pre-existing gap from experience migration — deferred, pre-existing
+- [x] [Review][Defer] `organisation` field allows empty string on create/update (no `min_length`) — pre-existing in experience schemas — deferred, pre-existing
+- [x] [Review][Defer] No integration tests for education adapter methods — pre-existing gap; pre-existing pattern — deferred, pre-existing
+- [x] [Review][Defer] No API-level tests for education router — pre-existing pattern — deferred, pre-existing
+- [x] [Review][Defer] `EducationEntry` has no `created_at`/`updated_at` columns — intentional; matches `ExperienceEntry` — deferred, pre-existing
 
 ### File List
