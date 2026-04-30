@@ -1,6 +1,6 @@
 # Story 2.3: Projects Section CRUD
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -21,45 +21,45 @@ so that I can showcase my personal and professional projects.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add projects string-length constants (AC: 4)
-  - [ ] 1.1 In `app/constants/limits.py`, add: `PROJECT_TITLE_MAX_LEN: Final[int] = 255`, `PROJECT_ORGANISATION_MAX_LEN: Final[int] = 255`, `PROJECT_DATE_MAX_LEN: Final[int] = 20`, `PROJECT_ENTRY_CONTENT_MAX_LEN: Final[int] = 1000`
+- [x] Task 1: Add projects string-length constants (AC: 4)
+  - [x] 1.1 In `app/constants/limits.py`, add: `PROJECT_TITLE_MAX_LEN: Final[int] = 255`, `PROJECT_ORGANISATION_MAX_LEN: Final[int] = 255`, `PROJECT_DATE_MAX_LEN: Final[int] = 20`, `PROJECT_ENTRY_CONTENT_MAX_LEN: Final[int] = 1000`
 
-- [ ] Task 2: Add `ProjectSectionRepositoryProtocol` to `app/interfaces/database.py` (AC: 6)
-  - [ ] 2.1 Add TYPE_CHECKING imports for all project schemas
-  - [ ] 2.2 Add `ProjectSectionRepositoryProtocol(Protocol)` with methods: `profile_exists`, `create_project_section`, `list_project_sections`, `get_project_section`, `update_project_section`, `delete_project_section`, `create_entry`, `list_entries`, `update_entry`, `delete_entry`, `count_entries`, `count_sections_for_profile`
+- [x] Task 2: Add `ProjectSectionRepositoryProtocol` to `app/interfaces/database.py` (AC: 6)
+  - [x] 2.1 Add TYPE_CHECKING imports for all project schemas
+  - [x] 2.2 Add `ProjectSectionRepositoryProtocol(Protocol)` with methods: `profile_exists`, `create_project_section`, `list_project_sections`, `get_project_section`, `update_project_section`, `delete_project_section`, `create_entry`, `list_entries`, `update_entry`, `delete_entry`, `count_entries`, `count_sections_for_profile`
 
-- [ ] Task 3: Create projects ORM models (AC: 4)
-  - [ ] 3.1 `app/models/sections/__init__.py` **already exists** — skip creation
-  - [ ] 3.2 Create `app/models/sections/projects.py` with `ProjectSection` and `ProjectEntry` classes
-  - [ ] 3.3 Add `project_sections` relationship to `Profile` in `app/models/profile.py` (mirroring `experience_sections` and `education_sections` already there)
+- [x] Task 3: Create projects ORM models (AC: 4)
+  - [x] 3.1 `app/models/sections/__init__.py` **already exists** — skip creation
+  - [x] 3.2 Create `app/models/sections/projects.py` with `ProjectSection` and `ProjectEntry` classes
+  - [x] 3.3 Add `project_sections` relationship to `Profile` in `app/models/profile.py` (mirroring `experience_sections` and `education_sections` already there)
 
-- [ ] Task 4: Create Alembic migration (AC: 5)
-  - [ ] 4.1 Run: `docker compose run --rm app alembic revision --autogenerate -m "add project section tables"`
-  - [ ] 4.2 Apply: `docker compose run --rm app alembic upgrade head`
+- [x] Task 4: Create Alembic migration (AC: 5)
+  - [x] 4.1 Run: `docker compose run --rm app alembic revision --autogenerate -m "add project section tables"`
+  - [x] 4.2 Apply: `docker compose run --rm app alembic upgrade head`
 
-- [ ] Task 5: Create Pydantic schemas (AC: 6)
-  - [ ] 5.1 `app/schemas/sections/__init__.py` **already exists** — skip creation
-  - [ ] 5.2 Create `app/schemas/sections/projects.py` with: `ProjectSectionCreate`, `ProjectSectionRead`, `ProjectSectionUpdate`, `ProjectEntryCreate`, `ProjectEntryRead`, `ProjectEntryUpdate`
+- [x] Task 5: Create Pydantic schemas (AC: 6)
+  - [x] 5.1 `app/schemas/sections/__init__.py` **already exists** — skip creation
+  - [x] 5.2 Create `app/schemas/sections/projects.py` with: `ProjectSectionCreate`, `ProjectSectionRead`, `ProjectSectionUpdate`, `ProjectEntryCreate`, `ProjectEntryRead`, `ProjectEntryUpdate`
 
-- [ ] Task 6: Implement `ProjectSectionService` (AC: 6, 8)
-  - [ ] 6.1 `app/services/sections/__init__.py` **already exists** — skip creation
-  - [ ] 6.2 Create `app/services/sections/projects_service.py`
+- [x] Task 6: Implement `ProjectSectionService` (AC: 6, 8)
+  - [x] 6.1 `app/services/sections/__init__.py` **already exists** — skip creation
+  - [x] 6.2 Create `app/services/sections/projects_service.py`
 
-- [ ] Task 7: Add projects methods to `SQLiteDatabaseAdapter` (AC: 1, 2, 3)
-  - [ ] 7.1 Add all `ProjectSectionRepositoryProtocol` method implementations to `app/adapters/sqlite_database.py`
+- [x] Task 7: Add projects methods to `SQLiteDatabaseAdapter` (AC: 1, 2, 3)
+  - [x] 7.1 Add all `ProjectSectionRepositoryProtocol` method implementations to `app/adapters/sqlite_database.py`
 
-- [ ] Task 8: Create unit tests (AC: 6)
-  - [ ] 8.1 Create `app/services/sections/projects_service.test.py` with `FakeProjectSectionRepository` and full test coverage
+- [x] Task 8: Create unit tests (AC: 6)
+  - [x] 8.1 Create `app/services/sections/projects_service.test.py` with `FakeProjectSectionRepository` and full test coverage
 
-- [ ] Task 9: Create router and wire DI (AC: 7)
-  - [ ] 9.1 Create `app/apis/sections/projects.py`
-  - [ ] 9.2 Add `from app.apis.sections.projects import router as projects_router` and `sections_router.include_router(projects_router)` to `app/apis/sections/__init__.py`
-  - [ ] 9.3 Add `get_project_section_service` to `app/apis/dependencies.py`
+- [x] Task 9: Create router and wire DI (AC: 7)
+  - [x] 9.1 Create `app/apis/sections/projects.py`
+  - [x] 9.2 Add `from app.apis.sections.projects import router as projects_router` and `sections_router.include_router(projects_router)` to `app/apis/sections/__init__.py`
+  - [x] 9.3 Add `get_project_section_service` to `app/apis/dependencies.py`
 
-- [ ] Task 10: Verify (AC: all)
-  - [ ] 10.1 Run `make test-local` — all tests pass
-  - [ ] 10.2 Run `make lint-local` — clean
-  - [ ] 10.3 Run `make typecheck-local` — no errors
+- [x] Task 10: Verify (AC: all)
+  - [x] 10.1 Run `make test-local` — all tests pass
+  - [x] 10.2 Run `make lint-local` — clean
+  - [x] 10.3 Run `make typecheck-local` — no errors
 
 ## Dev Notes
 
@@ -434,6 +434,28 @@ claude-sonnet-4-6
 
 ### Debug Log References
 
+None.
+
 ### Completion Notes List
 
+- Implemented via subagent-driven-development on branch `story/2-3-projects-section-crud`
+- `migrations/env.py` required a fix to register `ProjectSection`/`ProjectEntry` with Alembic metadata (missing import discovered in Task 2 review)
+- Alembic auto-generate included false-positive FK ops on `profile_contacts` (SQLite ALTER constraint limitation); these were removed from the migration before applying
+- Ruff auto-fix updated imports to `X | Y` union syntax in migration file (style only)
+- All 206 tests pass, lint clean, typecheck clean
+
 ### File List
+
+- `app/constants/limits.py` — added 4 PROJECT_* constants
+- `app/interfaces/database.py` — added ProjectSectionRepositoryProtocol
+- `app/models/sections/projects.py` — created ProjectSection, ProjectEntry ORM models
+- `app/models/profile.py` — added project_sections relationship
+- `app/schemas/sections/projects.py` — created 6 Pydantic schema classes
+- `app/services/sections/projects_service.py` — created ProjectSectionService
+- `app/services/sections/projects_service.test.py` — 42 unit tests
+- `app/adapters/sqlite_database.py` — added 12 project adapter methods
+- `app/apis/sections/projects.py` — created FastAPI router (8 endpoints)
+- `app/apis/sections/__init__.py` — registered projects_router
+- `app/apis/dependencies.py` — added get_project_section_service
+- `migrations/env.py` — added project models import for Alembic metadata
+- `migrations/versions/34a634dca953_add_project_section_tables.py` — Alembic migration
