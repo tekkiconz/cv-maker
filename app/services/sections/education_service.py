@@ -40,9 +40,7 @@ class EducationSectionService:
         assert isinstance(result, list), "list_education_sections must return a list"
         return result
 
-    async def get_education_section(
-        self, profile_id: int, section_id: int
-    ) -> EducationSectionRead:
+    async def get_education_section(self, profile_id: int, section_id: int) -> EducationSectionRead:
         assert profile_id > 0, "profile_id must be a positive integer"
         assert section_id > 0, "section_id must be a positive integer"
         if not await self._db.profile_exists(profile_id):

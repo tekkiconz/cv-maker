@@ -162,12 +162,8 @@ async def test_create_education_section_postcondition_profile_id_matches(
 async def test_list_education_sections_ordered_by_display_order(
     service: EducationSectionService,
 ) -> None:
-    await service.create_education_section(
-        1, EducationSectionCreate(title="B", display_order=2)
-    )
-    await service.create_education_section(
-        1, EducationSectionCreate(title="A", display_order=1)
-    )
+    await service.create_education_section(1, EducationSectionCreate(title="B", display_order=2))
+    await service.create_education_section(1, EducationSectionCreate(title="A", display_order=1))
     result = await service.list_education_sections(1)
     assert [s.title for s in result] == ["A", "B"]
 
@@ -189,9 +185,7 @@ async def test_get_education_section_not_found_raises(
 
 
 async def test_update_education_section_happy_path(service: EducationSectionService) -> None:
-    created = await service.create_education_section(
-        1, EducationSectionCreate(title="Old Title")
-    )
+    created = await service.create_education_section(1, EducationSectionCreate(title="Old Title"))
     result = await service.update_education_section(
         1, created.id, EducationSectionUpdate(title="New Title")
     )
@@ -215,9 +209,7 @@ async def test_toggle_is_enabled_false(service: EducationSectionService) -> None
 
 async def test_toggle_is_enabled_back_to_true(service: EducationSectionService) -> None:
     created = await service.create_education_section(1, EducationSectionCreate(title="BSc"))
-    await service.update_education_section(
-        1, created.id, EducationSectionUpdate(is_enabled=False)
-    )
+    await service.update_education_section(1, created.id, EducationSectionUpdate(is_enabled=False))
     result = await service.update_education_section(
         1, created.id, EducationSectionUpdate(is_enabled=True)
     )
@@ -257,9 +249,7 @@ async def test_create_entry_postcondition_section_id_matches(
     service: EducationSectionService,
 ) -> None:
     section = await service.create_education_section(2, EducationSectionCreate(title="BSc"))
-    result = await service.create_entry(
-        2, section.id, EducationEntryCreate(content="Dean's list")
-    )
+    result = await service.create_entry(2, section.id, EducationEntryCreate(content="Dean's list"))
     assert result.section_id == section.id
 
 
@@ -267,9 +257,7 @@ async def test_create_entry_limit_exceeded_raises(
     service: EducationSectionService,
     fake_db: FakeEducationSectionRepository,
 ) -> None:
-    section = await service.create_education_section(
-        1, EducationSectionCreate(title="BSc")
-    )
+    section = await service.create_education_section(1, EducationSectionCreate(title="BSc"))
     for i in range(MAX_ENTRIES_PER_SECTION):
         fake_db._entries.append(
             EducationEntryRead(
@@ -310,9 +298,7 @@ async def test_create_section_limit_exceeded_raises(
 
 async def test_update_entry_happy_path(service: EducationSectionService) -> None:
     section = await service.create_education_section(1, EducationSectionCreate(title="BSc"))
-    created = await service.create_entry(
-        1, section.id, EducationEntryCreate(content="old content")
-    )
+    created = await service.create_entry(1, section.id, EducationEntryCreate(content="old content"))
     result = await service.update_entry(
         1, section.id, created.id, EducationEntryUpdate(content="new content")
     )
@@ -327,9 +313,7 @@ async def test_update_entry_not_found_raises(service: EducationSectionService) -
 
 async def test_delete_entry(service: EducationSectionService) -> None:
     section = await service.create_education_section(1, EducationSectionCreate(title="BSc"))
-    created = await service.create_entry(
-        1, section.id, EducationEntryCreate(content="bullet")
-    )
+    created = await service.create_entry(1, section.id, EducationEntryCreate(content="bullet"))
     await service.delete_entry(1, section.id, created.id)
     entries = await service.list_entries(section.id)
     assert all(e.id != created.id for e in entries)

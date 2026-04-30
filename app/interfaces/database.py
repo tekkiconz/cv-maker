@@ -5,14 +5,6 @@ from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 if TYPE_CHECKING:
     from app.schemas.contact import ContactCreate, ContactRead, ContactUpdate
     from app.schemas.profile import ProfileCreate, ProfileRead, ProfileUpdate
-    from app.schemas.sections.experience import (
-        ExperienceEntryCreate,
-        ExperienceEntryRead,
-        ExperienceEntryUpdate,
-        ExperienceSectionCreate,
-        ExperienceSectionRead,
-        ExperienceSectionUpdate,
-    )
     from app.schemas.sections.education import (
         EducationEntryCreate,
         EducationEntryRead,
@@ -20,6 +12,14 @@ if TYPE_CHECKING:
         EducationSectionCreate,
         EducationSectionRead,
         EducationSectionUpdate,
+    )
+    from app.schemas.sections.experience import (
+        ExperienceEntryCreate,
+        ExperienceEntryRead,
+        ExperienceEntryUpdate,
+        ExperienceSectionCreate,
+        ExperienceSectionRead,
+        ExperienceSectionUpdate,
     )
 
 
