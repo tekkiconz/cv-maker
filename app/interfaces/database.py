@@ -21,6 +21,14 @@ if TYPE_CHECKING:
         ExperienceSectionRead,
         ExperienceSectionUpdate,
     )
+    from app.schemas.sections.projects import (
+        ProjectEntryCreate,
+        ProjectEntryRead,
+        ProjectEntryUpdate,
+        ProjectSectionCreate,
+        ProjectSectionRead,
+        ProjectSectionUpdate,
+    )
 
 
 @runtime_checkable
@@ -138,3 +146,40 @@ class EducationSectionRepositoryProtocol(Protocol):
     async def count_education_entries(self, section_id: int) -> int: ...
 
     async def count_education_sections_for_profile(self, profile_id: int) -> int: ...
+
+
+@runtime_checkable
+class ProjectSectionRepositoryProtocol(Protocol):
+    async def profile_exists(self, profile_id: int) -> bool: ...
+
+    async def create_project_section(
+        self, profile_id: int, data: ProjectSectionCreate
+    ) -> ProjectSectionRead: ...
+
+    async def list_project_sections(self, profile_id: int) -> list[ProjectSectionRead]: ...
+
+    async def get_project_section(
+        self, profile_id: int, section_id: int
+    ) -> ProjectSectionRead | None: ...
+
+    async def update_project_section(
+        self, profile_id: int, section_id: int, data: ProjectSectionUpdate
+    ) -> ProjectSectionRead | None: ...
+
+    async def delete_project_section(self, profile_id: int, section_id: int) -> bool: ...
+
+    async def create_project_entry(
+        self, section_id: int, data: ProjectEntryCreate
+    ) -> ProjectEntryRead: ...
+
+    async def list_project_entries(self, section_id: int) -> list[ProjectEntryRead]: ...
+
+    async def update_project_entry(
+        self, section_id: int, entry_id: int, data: ProjectEntryUpdate
+    ) -> ProjectEntryRead | None: ...
+
+    async def delete_project_entry(self, section_id: int, entry_id: int) -> bool: ...
+
+    async def count_project_entries(self, section_id: int) -> int: ...
+
+    async def count_project_sections_for_profile(self, profile_id: int) -> int: ...
