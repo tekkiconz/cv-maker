@@ -1,6 +1,6 @@
 # Story 2.2: Education Section CRUD
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -21,45 +21,45 @@ so that I can capture my academic background in a structured format.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add education string-length constants (AC: 4)
-  - [ ] 1.1 In `app/constants/limits.py`, add: `EDUCATION_TITLE_MAX_LEN: Final[int] = 255`, `EDUCATION_ORGANISATION_MAX_LEN: Final[int] = 255`, `EDUCATION_DATE_MAX_LEN: Final[int] = 20`, `EDUCATION_ENTRY_CONTENT_MAX_LEN: Final[int] = 1000`
+- [x] Task 1: Add education string-length constants (AC: 4)
+  - [x] 1.1 In `app/constants/limits.py`, add: `EDUCATION_TITLE_MAX_LEN: Final[int] = 255`, `EDUCATION_ORGANISATION_MAX_LEN: Final[int] = 255`, `EDUCATION_DATE_MAX_LEN: Final[int] = 20`, `EDUCATION_ENTRY_CONTENT_MAX_LEN: Final[int] = 1000`
 
-- [ ] Task 2: Add `EducationSectionRepositoryProtocol` to `app/interfaces/database.py` (AC: 6)
-  - [ ] 2.1 Add TYPE_CHECKING imports for all education schemas
-  - [ ] 2.2 Add `EducationSectionRepositoryProtocol(Protocol)` with methods: `profile_exists`, `create_education_section`, `list_education_sections`, `get_education_section`, `update_education_section`, `delete_education_section`, `create_entry`, `list_entries`, `update_entry`, `delete_entry`, `count_entries`, `count_sections_for_profile`
+- [x] Task 2: Add `EducationSectionRepositoryProtocol` to `app/interfaces/database.py` (AC: 6)
+  - [x] 2.1 Add TYPE_CHECKING imports for all education schemas
+  - [x] 2.2 Add `EducationSectionRepositoryProtocol(Protocol)` with methods: `profile_exists`, `create_education_section`, `list_education_sections`, `get_education_section`, `update_education_section`, `delete_education_section`, `create_entry`, `list_entries`, `update_entry`, `delete_entry`, `count_entries`, `count_sections_for_profile`
 
-- [ ] Task 3: Create education ORM models (AC: 4)
-  - [ ] 3.1 `app/models/sections/__init__.py` **already exists** — skip creation
-  - [ ] 3.2 Create `app/models/sections/education.py` with `EducationSection` and `EducationEntry` classes
-  - [ ] 3.3 Add `education_sections` relationship to `Profile` in `app/models/profile.py` (mirroring `experience_sections` already there)
+- [x] Task 3: Create education ORM models (AC: 4)
+  - [x] 3.1 `app/models/sections/__init__.py` **already exists** — skip creation
+  - [x] 3.2 Create `app/models/sections/education.py` with `EducationSection` and `EducationEntry` classes
+  - [x] 3.3 Add `education_sections` relationship to `Profile` in `app/models/profile.py` (mirroring `experience_sections` already there)
 
-- [ ] Task 4: Create Alembic migration (AC: 5)
-  - [ ] 4.1 Run: `docker compose run --rm app alembic revision --autogenerate -m "add education section tables"`
-  - [ ] 4.2 Apply: `docker compose run --rm app alembic upgrade head`
+- [x] Task 4: Create Alembic migration (AC: 5)
+  - [x] 4.1 Run: `docker compose run --rm app alembic revision --autogenerate -m "add education section tables"`
+  - [x] 4.2 Apply: `docker compose run --rm app alembic upgrade head`
 
-- [ ] Task 5: Create Pydantic schemas (AC: 6)
-  - [ ] 5.1 `app/schemas/sections/__init__.py` **already exists** — skip creation
-  - [ ] 5.2 Create `app/schemas/sections/education.py` with: `EducationSectionCreate`, `EducationSectionRead`, `EducationSectionUpdate`, `EducationEntryCreate`, `EducationEntryRead`, `EducationEntryUpdate`
+- [x] Task 5: Create Pydantic schemas (AC: 6)
+  - [x] 5.1 `app/schemas/sections/__init__.py` **already exists** — skip creation
+  - [x] 5.2 Create `app/schemas/sections/education.py` with: `EducationSectionCreate`, `EducationSectionRead`, `EducationSectionUpdate`, `EducationEntryCreate`, `EducationEntryRead`, `EducationEntryUpdate`
 
-- [ ] Task 6: Implement `EducationSectionService` (AC: 6, 8)
-  - [ ] 6.1 `app/services/sections/__init__.py` **already exists** — skip creation
-  - [ ] 6.2 Create `app/services/sections/education_service.py`
+- [x] Task 6: Implement `EducationSectionService` (AC: 6, 8)
+  - [x] 6.1 `app/services/sections/__init__.py` **already exists** — skip creation
+  - [x] 6.2 Create `app/services/sections/education_service.py`
 
-- [ ] Task 7: Add education methods to `SQLiteDatabaseAdapter` (AC: 1, 2, 3)
-  - [ ] 7.1 Add all `EducationSectionRepositoryProtocol` method implementations to `app/adapters/sqlite_database.py`
+- [x] Task 7: Add education methods to `SQLiteDatabaseAdapter` (AC: 1, 2, 3)
+  - [x] 7.1 Add all `EducationSectionRepositoryProtocol` method implementations to `app/adapters/sqlite_database.py`
 
-- [ ] Task 8: Create unit tests (AC: 6)
-  - [ ] 8.1 Create `app/services/sections/education_service.test.py` with `FakeEducationSectionRepository` and full test coverage
+- [x] Task 8: Create unit tests (AC: 6)
+  - [x] 8.1 Create `app/services/sections/education_service.test.py` with `FakeEducationSectionRepository` and full test coverage
 
-- [ ] Task 9: Create router and wire DI (AC: 7)
-  - [ ] 9.1 Create `app/apis/sections/education.py`
-  - [ ] 9.2 Add `from app.apis.sections.education import router as education_router` and `sections_router.include_router(education_router)` to `app/apis/sections/__init__.py`
-  - [ ] 9.3 Add `get_education_section_service` to `app/apis/dependencies.py`
+- [x] Task 9: Create router and wire DI (AC: 7)
+  - [x] 9.1 Create `app/apis/sections/education.py`
+  - [x] 9.2 Add `from app.apis.sections.education import router as education_router` and `sections_router.include_router(education_router)` to `app/apis/sections/__init__.py`
+  - [x] 9.3 Add `get_education_section_service` to `app/apis/dependencies.py`
 
-- [ ] Task 10: Verify (AC: all)
-  - [ ] 10.1 Run `make test-local` — all tests pass
-  - [ ] 10.2 Run `make lint-local` — clean
-  - [ ] 10.3 Run `make typecheck-local` — no errors
+- [x] Task 10: Verify (AC: all)
+  - [x] 10.1 Run `make test-local` — all tests pass
+  - [x] 10.2 Run `make lint-local` — clean
+  - [x] 10.3 Run `make typecheck-local` — no errors
 
 ## Dev Notes
 
