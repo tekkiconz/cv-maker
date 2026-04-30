@@ -41,9 +41,7 @@ class ProjectSection(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow, onupdate=_utcnow, nullable=False
     )
-    entries: Mapped[list[ProjectEntry]] = relationship(
-        "ProjectEntry", cascade="all, delete-orphan"
-    )
+    entries: Mapped[list[ProjectEntry]] = relationship("ProjectEntry", cascade="all, delete-orphan")
     profile: Mapped[Profile] = relationship("Profile", back_populates="project_sections")
 
 

@@ -250,9 +250,7 @@ async def test_create_entry_limit_exceeded_raises(
     section = await service.create_project_section(1, ProjectSectionCreate(title="App"))
     for i in range(MAX_ENTRIES_PER_SECTION):
         fake_db._entries.append(
-            ProjectEntryRead(
-                id=i + 1, section_id=section.id, content=f"entry {i}", display_order=i
-            )
+            ProjectEntryRead(id=i + 1, section_id=section.id, content=f"entry {i}", display_order=i)
         )
     fake_db._next_entry_id = MAX_ENTRIES_PER_SECTION + 1
 
