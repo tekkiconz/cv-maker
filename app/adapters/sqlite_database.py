@@ -10,6 +10,7 @@ from app.exceptions import ContactLimitExceededError
 from app.models.profile import Profile, ProfileContact
 from app.models.sections.education import EducationEntry, EducationSection
 from app.models.sections.experience import ExperienceEntry, ExperienceSection
+from app.models.sections.projects import ProjectEntry, ProjectSection
 from app.schemas.contact import ContactCreate, ContactRead, ContactUpdate
 from app.schemas.profile import ProfileCreate, ProfileRead, ProfileUpdate
 from app.schemas.sections.education import (
@@ -27,6 +28,14 @@ from app.schemas.sections.experience import (
     ExperienceSectionCreate,
     ExperienceSectionRead,
     ExperienceSectionUpdate,
+)
+from app.schemas.sections.projects import (
+    ProjectEntryCreate,
+    ProjectEntryRead,
+    ProjectEntryUpdate,
+    ProjectSectionCreate,
+    ProjectSectionRead,
+    ProjectSectionUpdate,
 )
 
 logger = logging.getLogger(__name__)
@@ -697,6 +706,250 @@ class SQLiteDatabaseAdapter:
         except Exception:
             logger.exception(
                 "delete_education_entry failed for section_id=%s entry_id=%s",
+                section_id,
+                entry_id,
+            )
+            await self._session.rollback()
+            raise
+        return True
+
+    @staticmethod
+    def _project_section_to_read(section: ProjectSection) -> ProjectSectionRead:
+        return ProjectSectionRead.model_validate(
+            {
+                "id": section.id,
+                "profile_id": section.profile_id,
+                "title": section.title,
+                "organisation": section.organisation,
+                "start_date": section.start_date,
+                "end_date": section.end_date,
+                "is_enabled": section.is_enabled,
+                "display_order": section.display_order,
+                "created_at": section.created_at,
+                "updated_at": section.updated_at,
+                "entries": [],
+            }
+        )
+
+    async def count_project_sections_for_profile(self, profile_id: int) -> int:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        result = await self._session.execute(
+            select(func.count())
+            .select_from(ProjectSection)
+            .where(ProjectSection.profile_id == profile_id)
+        )
+        count = result.scalar() or 0
+        assert count >= 0, "count_project_sections_for_profile must return non-negative"
+        return count
+
+    async def create_project_section(
+        self, profile_id: int, data: ProjectSectionCreate
+    ) -> ProjectSectionRead:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        section = ProjectSection(
+            profile_id=profile_id,
+            title=data.title,
+            organisation=data.organisation,
+            start_date=data.start_date,
+            end_date=data.end_date,
+            is_enabled=data.is_enabled,
+            display_order=data.display_order,
+        )
+        self._session.add(section)
+        try:
+            await self._session.commit()
+        except Exception:
+            logger.exception("create_project_section failed for profile_id=%s", profile_id)
+            await self._session.rollback()
+            raise
+        await self._session.refresh(section)
+        assert section.id is not None, "DB did not assign an id after insert"
+        result = self._project_section_to_read(section)
+        assert result.profile_id == profile_id, "returned section profile_id must match request"
+        assert result.entries == [], "create must return section with empty entries"
+        return result
+
+    async def list_project_sections(self, profile_id: int) -> list[ProjectSectionRead]:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        result = await self._session.execute(
+            select(ProjectSection)
+            .where(ProjectSection.profile_id == profile_id)
+            .order_by(ProjectSection.display_order)
+        )
+        sections = list(result.scalars().all())
+        validated = [self._project_section_to_read(s) for s in sections]
+        assert isinstance(validated, list), "list_project_sections must return a list"
+        return validated
+
+    async def get_project_section(
+        self, profile_id: int, section_id: int
+    ) -> ProjectSectionRead | None:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        assert section_id > 0, "section_id must be a positive integer"
+        stmt = (
+            select(ProjectSection)
+            .options(selectinload(ProjectSection.entries))
+            .where(
+                ProjectSection.id == section_id,
+                ProjectSection.profile_id == profile_id,
+            )
+        )
+        result = await self._session.execute(stmt)
+        section = result.scalar_one_or_none()
+        if section is None:
+            return None
+        return ProjectSectionRead.model_validate(section)
+
+    async def update_project_section(
+        self, profile_id: int, section_id: int, data: ProjectSectionUpdate
+    ) -> ProjectSectionRead | None:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        assert section_id > 0, "section_id must be a positive integer"
+        result = await self._session.execute(
+            select(ProjectSection).where(
+                ProjectSection.id == section_id,
+                ProjectSection.profile_id == profile_id,
+            )
+        )
+        section = result.scalar_one_or_none()
+        if section is None:
+            return None
+        update_dict = data.model_dump(exclude_unset=True)
+        for key, value in update_dict.items():
+            setattr(section, key, value)
+        try:
+            await self._session.commit()
+        except Exception:
+            logger.exception(
+                "update_project_section failed for profile_id=%s section_id=%s",
+                profile_id,
+                section_id,
+            )
+            await self._session.rollback()
+            raise
+        refreshed = await self._session.execute(
+            select(ProjectSection)
+            .options(selectinload(ProjectSection.entries))
+            .where(ProjectSection.id == section.id, ProjectSection.profile_id == profile_id)
+        )
+        return ProjectSectionRead.model_validate(refreshed.scalar_one())
+
+    async def delete_project_section(self, profile_id: int, section_id: int) -> bool:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        assert section_id > 0, "section_id must be a positive integer"
+        result = await self._session.execute(
+            select(ProjectSection).where(
+                ProjectSection.id == section_id,
+                ProjectSection.profile_id == profile_id,
+            )
+        )
+        section = result.scalar_one_or_none()
+        if section is None:
+            return False
+        await self._session.delete(section)
+        try:
+            await self._session.commit()
+        except Exception:
+            logger.exception(
+                "delete_project_section failed for profile_id=%s section_id=%s",
+                profile_id,
+                section_id,
+            )
+            await self._session.rollback()
+            raise
+        return True
+
+    async def count_project_entries(self, section_id: int) -> int:
+        assert section_id > 0, "section_id must be a positive integer"
+        result = await self._session.execute(
+            select(func.count())
+            .select_from(ProjectEntry)
+            .where(ProjectEntry.section_id == section_id)
+        )
+        count = result.scalar() or 0
+        assert count >= 0, "count_entries must return non-negative"
+        return count
+
+    async def create_project_entry(
+        self, section_id: int, data: ProjectEntryCreate
+    ) -> ProjectEntryRead:
+        assert section_id > 0, "section_id must be a positive integer"
+        entry = ProjectEntry(
+            section_id=section_id,
+            content=data.content,
+            display_order=data.display_order,
+        )
+        self._session.add(entry)
+        try:
+            await self._session.commit()
+        except Exception:
+            logger.exception("create_project_entry failed for section_id=%s", section_id)
+            await self._session.rollback()
+            raise
+        await self._session.refresh(entry)
+        assert entry.id is not None, "DB did not assign an id after insert"
+        return ProjectEntryRead.model_validate(entry)
+
+    async def list_project_entries(self, section_id: int) -> list[ProjectEntryRead]:
+        assert section_id > 0, "section_id must be a positive integer"
+        result = await self._session.execute(
+            select(ProjectEntry)
+            .where(ProjectEntry.section_id == section_id)
+            .order_by(ProjectEntry.display_order)
+        )
+        entries = list(result.scalars().all())
+        validated = [ProjectEntryRead.model_validate(e) for e in entries]
+        assert isinstance(validated, list), "list_project_entries must return a list"
+        return validated
+
+    async def update_project_entry(
+        self, section_id: int, entry_id: int, data: ProjectEntryUpdate
+    ) -> ProjectEntryRead | None:
+        assert section_id > 0, "section_id must be a positive integer"
+        assert entry_id > 0, "entry_id must be a positive integer"
+        result = await self._session.execute(
+            select(ProjectEntry).where(
+                ProjectEntry.id == entry_id,
+                ProjectEntry.section_id == section_id,
+            )
+        )
+        entry = result.scalar_one_or_none()
+        if entry is None:
+            return None
+        update_dict = data.model_dump(exclude_unset=True)
+        for key, value in update_dict.items():
+            setattr(entry, key, value)
+        try:
+            await self._session.commit()
+        except Exception:
+            logger.exception(
+                "update_project_entry failed for section_id=%s entry_id=%s",
+                section_id,
+                entry_id,
+            )
+            await self._session.rollback()
+            raise
+        await self._session.refresh(entry)
+        return ProjectEntryRead.model_validate(entry)
+
+    async def delete_project_entry(self, section_id: int, entry_id: int) -> bool:
+        assert section_id > 0, "section_id must be a positive integer"
+        assert entry_id > 0, "entry_id must be a positive integer"
+        result = await self._session.execute(
+            select(ProjectEntry).where(
+                ProjectEntry.id == entry_id,
+                ProjectEntry.section_id == section_id,
+            )
+        )
+        entry = result.scalar_one_or_none()
+        if entry is None:
+            return False
+        await self._session.delete(entry)
+        try:
+            await self._session.commit()
+        except Exception:
+            logger.exception(
+                "delete_project_entry failed for section_id=%s entry_id=%s",
                 section_id,
                 entry_id,
             )
