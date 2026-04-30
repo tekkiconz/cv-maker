@@ -8,9 +8,18 @@ from sqlalchemy.orm import selectinload
 from app.constants.limits import MAX_CONTACTS_PER_PROFILE
 from app.exceptions import ContactLimitExceededError
 from app.models.profile import Profile, ProfileContact
+from app.models.sections.education import EducationEntry, EducationSection
 from app.models.sections.experience import ExperienceEntry, ExperienceSection
 from app.schemas.contact import ContactCreate, ContactRead, ContactUpdate
 from app.schemas.profile import ProfileCreate, ProfileRead, ProfileUpdate
+from app.schemas.sections.education import (
+    EducationEntryCreate,
+    EducationEntryRead,
+    EducationEntryUpdate,
+    EducationSectionCreate,
+    EducationSectionRead,
+    EducationSectionUpdate,
+)
 from app.schemas.sections.experience import (
     ExperienceEntryCreate,
     ExperienceEntryRead,
@@ -446,6 +455,250 @@ class SQLiteDatabaseAdapter:
         except Exception:
             logger.exception(
                 "delete_entry failed for section_id=%s entry_id=%s", section_id, entry_id
+            )
+            await self._session.rollback()
+            raise
+        return True
+
+    @staticmethod
+    def _education_section_to_read(section: EducationSection) -> EducationSectionRead:
+        return EducationSectionRead.model_validate(
+            {
+                "id": section.id,
+                "profile_id": section.profile_id,
+                "title": section.title,
+                "organisation": section.organisation,
+                "start_date": section.start_date,
+                "end_date": section.end_date,
+                "is_enabled": section.is_enabled,
+                "display_order": section.display_order,
+                "created_at": section.created_at,
+                "updated_at": section.updated_at,
+                "entries": [],
+            }
+        )
+
+    async def count_education_sections_for_profile(self, profile_id: int) -> int:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        result = await self._session.execute(
+            select(func.count())
+            .select_from(EducationSection)
+            .where(EducationSection.profile_id == profile_id)
+        )
+        count = result.scalar() or 0
+        assert count >= 0, "count_education_sections_for_profile must return non-negative"
+        return count
+
+    async def create_education_section(
+        self, profile_id: int, data: EducationSectionCreate
+    ) -> EducationSectionRead:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        section = EducationSection(
+            profile_id=profile_id,
+            title=data.title,
+            organisation=data.organisation,
+            start_date=data.start_date,
+            end_date=data.end_date,
+            is_enabled=data.is_enabled,
+            display_order=data.display_order,
+        )
+        self._session.add(section)
+        try:
+            await self._session.commit()
+        except Exception:
+            logger.exception("create_education_section failed for profile_id=%s", profile_id)
+            await self._session.rollback()
+            raise
+        await self._session.refresh(section)
+        assert section.id is not None, "DB did not assign an id after insert"
+        result = self._education_section_to_read(section)
+        assert result.profile_id == profile_id, "returned section profile_id must match request"
+        assert result.entries == [], "create must return section with empty entries"
+        return result
+
+    async def list_education_sections(self, profile_id: int) -> list[EducationSectionRead]:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        result = await self._session.execute(
+            select(EducationSection)
+            .where(EducationSection.profile_id == profile_id)
+            .order_by(EducationSection.display_order)
+        )
+        sections = list(result.scalars().all())
+        validated = [self._education_section_to_read(s) for s in sections]
+        assert isinstance(validated, list), "list_education_sections must return a list"
+        return validated
+
+    async def get_education_section(
+        self, profile_id: int, section_id: int
+    ) -> EducationSectionRead | None:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        assert section_id > 0, "section_id must be a positive integer"
+        stmt = (
+            select(EducationSection)
+            .options(selectinload(EducationSection.entries))
+            .where(
+                EducationSection.id == section_id,
+                EducationSection.profile_id == profile_id,
+            )
+        )
+        result = await self._session.execute(stmt)
+        section = result.scalar_one_or_none()
+        if section is None:
+            return None
+        return EducationSectionRead.model_validate(section)
+
+    async def update_education_section(
+        self, profile_id: int, section_id: int, data: EducationSectionUpdate
+    ) -> EducationSectionRead | None:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        assert section_id > 0, "section_id must be a positive integer"
+        result = await self._session.execute(
+            select(EducationSection).where(
+                EducationSection.id == section_id,
+                EducationSection.profile_id == profile_id,
+            )
+        )
+        section = result.scalar_one_or_none()
+        if section is None:
+            return None
+        update_dict = data.model_dump(exclude_unset=True)
+        for key, value in update_dict.items():
+            setattr(section, key, value)
+        try:
+            await self._session.commit()
+        except Exception:
+            logger.exception(
+                "update_education_section failed for profile_id=%s section_id=%s",
+                profile_id,
+                section_id,
+            )
+            await self._session.rollback()
+            raise
+        refreshed = await self._session.execute(
+            select(EducationSection)
+            .options(selectinload(EducationSection.entries))
+            .where(EducationSection.id == section.id, EducationSection.profile_id == profile_id)
+        )
+        return EducationSectionRead.model_validate(refreshed.scalar_one())
+
+    async def delete_education_section(self, profile_id: int, section_id: int) -> bool:
+        assert profile_id > 0, "profile_id must be a positive integer"
+        assert section_id > 0, "section_id must be a positive integer"
+        result = await self._session.execute(
+            select(EducationSection).where(
+                EducationSection.id == section_id,
+                EducationSection.profile_id == profile_id,
+            )
+        )
+        section = result.scalar_one_or_none()
+        if section is None:
+            return False
+        await self._session.delete(section)
+        try:
+            await self._session.commit()
+        except Exception:
+            logger.exception(
+                "delete_education_section failed for profile_id=%s section_id=%s",
+                profile_id,
+                section_id,
+            )
+            await self._session.rollback()
+            raise
+        return True
+
+    async def count_education_entries(self, section_id: int) -> int:
+        assert section_id > 0, "section_id must be a positive integer"
+        result = await self._session.execute(
+            select(func.count())
+            .select_from(EducationEntry)
+            .where(EducationEntry.section_id == section_id)
+        )
+        count = result.scalar() or 0
+        assert count >= 0, "count_entries must return non-negative"
+        return count
+
+    async def create_education_entry(
+        self, section_id: int, data: EducationEntryCreate
+    ) -> EducationEntryRead:
+        assert section_id > 0, "section_id must be a positive integer"
+        entry = EducationEntry(
+            section_id=section_id,
+            content=data.content,
+            display_order=data.display_order,
+        )
+        self._session.add(entry)
+        try:
+            await self._session.commit()
+        except Exception:
+            logger.exception("create_education_entry failed for section_id=%s", section_id)
+            await self._session.rollback()
+            raise
+        await self._session.refresh(entry)
+        assert entry.id is not None, "DB did not assign an id after insert"
+        return EducationEntryRead.model_validate(entry)
+
+    async def list_education_entries(self, section_id: int) -> list[EducationEntryRead]:
+        assert section_id > 0, "section_id must be a positive integer"
+        result = await self._session.execute(
+            select(EducationEntry)
+            .where(EducationEntry.section_id == section_id)
+            .order_by(EducationEntry.display_order)
+        )
+        entries = list(result.scalars().all())
+        validated = [EducationEntryRead.model_validate(e) for e in entries]
+        assert isinstance(validated, list), "list_education_entries must return a list"
+        return validated
+
+    async def update_education_entry(
+        self, section_id: int, entry_id: int, data: EducationEntryUpdate
+    ) -> EducationEntryRead | None:
+        assert section_id > 0, "section_id must be a positive integer"
+        assert entry_id > 0, "entry_id must be a positive integer"
+        result = await self._session.execute(
+            select(EducationEntry).where(
+                EducationEntry.id == entry_id,
+                EducationEntry.section_id == section_id,
+            )
+        )
+        entry = result.scalar_one_or_none()
+        if entry is None:
+            return None
+        update_dict = data.model_dump(exclude_unset=True)
+        for key, value in update_dict.items():
+            setattr(entry, key, value)
+        try:
+            await self._session.commit()
+        except Exception:
+            logger.exception(
+                "update_education_entry failed for section_id=%s entry_id=%s",
+                section_id,
+                entry_id,
+            )
+            await self._session.rollback()
+            raise
+        await self._session.refresh(entry)
+        return EducationEntryRead.model_validate(entry)
+
+    async def delete_education_entry(self, section_id: int, entry_id: int) -> bool:
+        assert section_id > 0, "section_id must be a positive integer"
+        assert entry_id > 0, "entry_id must be a positive integer"
+        result = await self._session.execute(
+            select(EducationEntry).where(
+                EducationEntry.id == entry_id,
+                EducationEntry.section_id == section_id,
+            )
+        )
+        entry = result.scalar_one_or_none()
+        if entry is None:
+            return False
+        await self._session.delete(entry)
+        try:
+            await self._session.commit()
+        except Exception:
+            logger.exception(
+                "delete_education_entry failed for section_id=%s entry_id=%s",
+                section_id,
+                entry_id,
             )
             await self._session.rollback()
             raise

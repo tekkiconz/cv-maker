@@ -1,6 +1,6 @@
 # Story 2.2: Education Section CRUD
 
-Status: review
+Status: done
 
 ## Story
 
@@ -428,5 +428,22 @@ claude-sonnet-4-6
 ### Completion Notes List
 
 - Story 2.1 merged to main 2026-04-28; story reevaluated and all worktree references removed
+
+### Review Findings
+
+- [x] [Review][Patch] `list_entries` missing `profile_id` parameter and ownership checks — violates AC 8 Tiger Style; raises no profile-not-found error; cross-profile entry enumeration possible if endpoint added [`app/services/sections/education_service.py:91-95`]
+- [x] [Review][Patch] `create_entry` missing explicit `profile_exists` check — when profile does not exist, error message says "Section X not found" not "Profile X not found"; violates spec requirement "Profile-not-found raises ValueError on every service method" [`app/services/sections/education_service.py:74-89`]
+- [x] [Review][Patch] Missing Tiger Style zero-id assertion tests for `list_education_sections` (profile_id=0) and `list_entries` (section_id=0) — both assertions exist in code, both tests absent [`app/services/sections/education_service.test.py`]
+- [x] [Review][Patch] `update_education_section` post-commit re-fetch missing `profile_id` filter — `.where(EducationSection.id == section.id)` should also include `EducationSection.profile_id == profile_id` for consistency and safety [`app/adapters/sqlite_database.py`]
+- [x] [Review][Defer] Router collapses profile-not-found and section-not-found `ValueError` into same 404 — pre-existing pattern from experience router [`app/apis/sections/education.py`] — deferred, pre-existing
+- [x] [Review][Defer] `create_entry` check-then-act race on `MAX_ENTRIES_PER_SECTION` — pre-existing (see W7 in deferred-work.md) — deferred, pre-existing
+- [x] [Review][Defer] `display_order` accepts negative integers — pre-existing (see W2 in deferred-work.md) — deferred, pre-existing
+- [x] [Review][Defer] `_education_section_to_read` hardcodes `entries=[]` with no guard — pre-existing pattern from experience — deferred, pre-existing
+- [x] [Review][Defer] `SectionLimitExceededError`/`EntryLimitExceededError` subclass `ValueError` — fragile exception hierarchy; pre-existing design in `app/exceptions.py` — deferred, pre-existing
+- [x] [Review][Defer] No indexes on `education_sections.profile_id` or `education_entries.section_id` in migration — full table scans on all list/count queries; pre-existing gap from experience migration — deferred, pre-existing
+- [x] [Review][Defer] `organisation` field allows empty string on create/update (no `min_length`) — pre-existing in experience schemas — deferred, pre-existing
+- [x] [Review][Defer] No integration tests for education adapter methods — pre-existing gap; pre-existing pattern — deferred, pre-existing
+- [x] [Review][Defer] No API-level tests for education router — pre-existing pattern — deferred, pre-existing
+- [x] [Review][Defer] `EducationEntry` has no `created_at`/`updated_at` columns — intentional; matches `ExperienceEntry` — deferred, pre-existing
 
 ### File List

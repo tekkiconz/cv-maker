@@ -5,6 +5,14 @@ from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 if TYPE_CHECKING:
     from app.schemas.contact import ContactCreate, ContactRead, ContactUpdate
     from app.schemas.profile import ProfileCreate, ProfileRead, ProfileUpdate
+    from app.schemas.sections.education import (
+        EducationEntryCreate,
+        EducationEntryRead,
+        EducationEntryUpdate,
+        EducationSectionCreate,
+        EducationSectionRead,
+        EducationSectionUpdate,
+    )
     from app.schemas.sections.experience import (
         ExperienceEntryCreate,
         ExperienceEntryRead,
@@ -93,3 +101,40 @@ class ExperienceSectionRepositoryProtocol(Protocol):
     async def count_entries(self, section_id: int) -> int: ...
 
     async def count_sections_for_profile(self, profile_id: int) -> int: ...
+
+
+@runtime_checkable
+class EducationSectionRepositoryProtocol(Protocol):
+    async def profile_exists(self, profile_id: int) -> bool: ...
+
+    async def create_education_section(
+        self, profile_id: int, data: EducationSectionCreate
+    ) -> EducationSectionRead: ...
+
+    async def list_education_sections(self, profile_id: int) -> list[EducationSectionRead]: ...
+
+    async def get_education_section(
+        self, profile_id: int, section_id: int
+    ) -> EducationSectionRead | None: ...
+
+    async def update_education_section(
+        self, profile_id: int, section_id: int, data: EducationSectionUpdate
+    ) -> EducationSectionRead | None: ...
+
+    async def delete_education_section(self, profile_id: int, section_id: int) -> bool: ...
+
+    async def create_education_entry(
+        self, section_id: int, data: EducationEntryCreate
+    ) -> EducationEntryRead: ...
+
+    async def list_education_entries(self, section_id: int) -> list[EducationEntryRead]: ...
+
+    async def update_education_entry(
+        self, section_id: int, entry_id: int, data: EducationEntryUpdate
+    ) -> EducationEntryRead | None: ...
+
+    async def delete_education_entry(self, section_id: int, entry_id: int) -> bool: ...
+
+    async def count_education_entries(self, section_id: int) -> int: ...
+
+    async def count_education_sections_for_profile(self, profile_id: int) -> int: ...
