@@ -12,6 +12,7 @@ from app.models.base import Base
 if TYPE_CHECKING:
     from app.models.sections.education import EducationSection
     from app.models.sections.experience import ExperienceSection
+    from app.models.sections.projects import ProjectSection
 
 
 def _utcnow() -> datetime:
@@ -40,6 +41,9 @@ class Profile(Base):
     )
     education_sections: Mapped[list[EducationSection]] = relationship(
         "EducationSection", cascade="all, delete-orphan", back_populates="profile"
+    )
+    project_sections: Mapped[list[ProjectSection]] = relationship(
+        "ProjectSection", cascade="all, delete-orphan", back_populates="profile"
     )
 
 
