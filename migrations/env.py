@@ -8,6 +8,7 @@ from sqlalchemy.pool import NullPool
 import app.models.profile  # registers Profile with Base.metadata
 import app.models.sections.education
 import app.models.sections.experience  # noqa: F401 — registers ExperienceSection/ExperienceEntry with Base.metadata
+import app.models.sections.projects  # noqa: F401 — registers ProjectSection/ProjectEntry with Base.metadata
 from app.configs.settings import settings
 from app.models.base import Base
 
