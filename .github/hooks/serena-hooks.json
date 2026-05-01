@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      { "type": "command", "bash": "serena-hooks activate --client=vscode" }
+    ],
+    "preToolUse": [
+      { "type": "command", "bash": "serena-hooks remind --client=vscode" }
+    ],
+    "sessionEnd": [
+      { "type": "command", "bash": "serena-hooks cleanup --client=vscode" }
+    ]
+  }
+}

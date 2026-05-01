@@ -33,3 +33,6 @@ docs/superpowers/
 
 # Git worktrees
 .worktrees/
+
+# AI agent skills (installed, not source)
+.agents/
