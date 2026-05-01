@@ -67,9 +67,7 @@ async def get_project_section(
     try:
         return await service.get_project_section(profile_id, section_id)
     except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
-        ) from None
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
 
 
 @router.patch("/{section_id}", response_model=ProjectSectionRead)
@@ -82,9 +80,7 @@ async def update_project_section(
     try:
         return await service.update_project_section(profile_id, section_id, data)
     except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
-        ) from None
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
 
 
 @router.delete("/{section_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -96,9 +92,7 @@ async def delete_project_section(
     try:
         await service.delete_project_section(profile_id, section_id)
     except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
-        ) from None
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -111,9 +105,7 @@ async def list_entries(
     try:
         return await service.list_entries(profile_id, section_id)
     except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
-        ) from None
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
 
 
 @router.post(
@@ -133,10 +125,8 @@ async def create_entry(
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
         ) from None
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Section not found"
-        ) from None
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
 
 
 @router.patch("/{section_id}/entries/{entry_id}", response_model=ProjectEntryRead)
@@ -150,9 +140,7 @@ async def update_entry(
     try:
         return await service.update_entry(profile_id, section_id, entry_id, data)
     except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
-        ) from None
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
 
 
 @router.delete("/{section_id}/entries/{entry_id}", status_code=status.HTTP_204_NO_CONTENT)
