@@ -537,3 +537,8 @@ async def test_delete_entry_profile_not_found_raises(service: ProjectSectionServ
     entry = await service.create_entry(1, section.id, ProjectEntryCreate(content="bullet"))
     with pytest.raises(ValueError, match="Profile 99 not found"):
         await service.delete_entry(99, section.id, entry.id)
+
+
+def test_schema_update_entry_content_null_rejected() -> None:
+    with pytest.raises(ValidationError):
+        ProjectEntryUpdate.model_validate({"content": None})

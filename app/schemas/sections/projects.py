@@ -78,3 +78,10 @@ class ProjectEntryUpdate(BaseModel):
         default=None, min_length=1, max_length=PROJECT_ENTRY_CONTENT_MAX_LEN
     )
     display_order: int | None = Field(default=None, ge=0)
+
+    @field_validator("content")
+    @classmethod
+    def content_must_not_be_null(cls, v: str | None) -> str:
+        if v is None:
+            raise ValueError("content cannot be set to null")
+        return v
