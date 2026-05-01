@@ -45,3 +45,9 @@
 - **W7: Race condition in section/entry limit enforcement** [`app/services/sections/experience_service.py`] — `count_*` and `create_*` are separate DB round-trips with no locking. SQLite write serialization mitigates in practice; requires `SELECT FOR UPDATE` or DB-level constraint to fix, same as De1 from story 1-5.
 - **W8: `update_experience_section` post-commit re-fetch uses only `section_id` without `profile_id` scope** [`app/adapters/sqlite_database.py`] — Safe because section PK is unique, but inconsistent with the preceding scoped query. Tighten to `.where(ExperienceSection.id == section.id, ExperienceSection.profile_id == profile_id)` in a future cleanup.
 - **W9: Cascade integration test cannot directly verify `experience_entries` row deletion** [`tests/api/test_profiles.py`] — No `GET /entries/{id}` endpoint exists; ORM cascade is defined correctly on `ExperienceSection.entries`. Add verification if a list-entries API is added in a future story.
+
+## Deferred from: code review of 2-3-projects-section-crud (2026-05-01)
+
+- **W1: `count_project_entries`/`list_project_entries` adapter methods take only `section_id` — no `profile_id` guard** [`app/adapters/sqlite_database.py:296,327`] — Safe via service enforcement today; unguarded for future direct callers. Pre-existing pattern (same as W4 from 2.1).
+- **W2: Concurrent TOCTOU race on section/entry count checks** [`app/services/sections/projects_service.py:26,84`] — `count_*` then `create_*` with no locking; SQLite write serialization mitigates. Pre-existing (same as W7 from 2.1, De1 from 1-5). Fix requires DB-level CHECK constraint or serialized transaction.
+- **W3: IDOR — `profile_id` from URL path trusted without ownership check** [`app/apis/sections/projects.py`] — Auth middleware is a stub per CLAUDE.md. Systemic gap; fix requires auth implementation story.
