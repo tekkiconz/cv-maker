@@ -103,6 +103,8 @@ class FakeProjectSectionRepository:
             section_id=section_id,
             content=data.content,
             display_order=data.display_order,
+            created_at=_now(),
+            updated_at=_now(),
         )
         self._entries.append(entry)
         self._next_entry_id += 1
@@ -249,11 +251,19 @@ async def test_create_entry_limit_exceeded_raises(
     fake_db: FakeProjectSectionRepository,
 ) -> None:
     section = await service.create_project_section(1, ProjectSectionCreate(title="App"))
+    base_id = fake_db._next_entry_id
     for i in range(MAX_ENTRIES_PER_SECTION):
         fake_db._entries.append(
-            ProjectEntryRead(id=i + 1, section_id=section.id, content=f"entry {i}", display_order=i)
+            ProjectEntryRead(
+                id=base_id + i,
+                section_id=section.id,
+                content=f"entry {i}",
+                display_order=i,
+                created_at=_now(),
+                updated_at=_now(),
+            )
         )
-    fake_db._next_entry_id = MAX_ENTRIES_PER_SECTION + 1
+    fake_db._next_entry_id = base_id + MAX_ENTRIES_PER_SECTION
 
     with pytest.raises(EntryLimitExceededError):
         await service.create_entry(1, section.id, ProjectEntryCreate(content="overflow"))
@@ -263,10 +273,11 @@ async def test_create_section_limit_exceeded_raises(
     service: ProjectSectionService,
     fake_db: FakeProjectSectionRepository,
 ) -> None:
+    base_id = fake_db._next_section_id
     for i in range(MAX_SECTIONS_PER_PROFILE):
         fake_db._sections.append(
             ProjectSectionRead(
-                id=i + 1,
+                id=base_id + i,
                 profile_id=1,
                 title=f"section {i}",
                 organisation=None,
@@ -279,7 +290,7 @@ async def test_create_section_limit_exceeded_raises(
                 entries=[],
             )
         )
-    fake_db._next_section_id = MAX_SECTIONS_PER_PROFILE + 1
+    fake_db._next_section_id = base_id + MAX_SECTIONS_PER_PROFILE
 
     with pytest.raises(SectionLimitExceededError):
         await service.create_project_section(1, ProjectSectionCreate(title="overflow"))
