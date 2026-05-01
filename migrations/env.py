@@ -6,9 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncConnection, async_engine_from_config
 from sqlalchemy.pool import NullPool
 
 import app.models.profile  # registers Profile with Base.metadata
-import app.models.sections.education
-import app.models.sections.experience  # registers models with Base.metadata
-import app.models.sections.projects  # noqa: F401 — registers ProjectSection/ProjectEntry with Base.metadata
+import app.models.sections.education  # registers EducationSection/EducationEntry
+import app.models.sections.experience  # registers ExperienceSection/ExperienceEntry
+import app.models.sections.projects  # noqa: F401 registers ProjectSection/ProjectEntry
 from app.configs.settings import settings
 from app.models.base import Base
 
