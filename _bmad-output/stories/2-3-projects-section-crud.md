@@ -523,8 +523,8 @@ _(all resolved)_
 
 ### Patches
 
-- [ ] [Review][Patch] `create_entry` router hardcodes `"Section not found"` for all `ValueError` — service raises `"Profile {id} not found"` when profile absent, client receives wrong 404 detail [`app/apis/sections/projects.py:136-139`]
-- [ ] [Review][Patch] `delete_entry` router hardcodes `"Entry not found"` for all `ValueError` — profile-not-found and section-not-found cases return misleading 404 detail; should use `str(exc)` like the other 5 entry/section endpoints [`app/apis/sections/projects.py:167-170`]
+- [x] [Review][Patch] `create_entry` router hardcodes `"Section not found"` for all `ValueError` — service raises `"Profile {id} not found"` when profile absent, client receives wrong 404 detail [`app/apis/sections/projects.py:136-139`]
+- [x] [Review][Patch] `delete_entry` router hardcodes `"Entry not found"` for all `ValueError` — profile-not-found and section-not-found cases return misleading 404 detail; should use `str(exc)` like the other 5 entry/section endpoints [`app/apis/sections/projects.py:167-170`]
 
 ### Deferred
 
