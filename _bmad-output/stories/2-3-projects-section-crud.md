@@ -499,11 +499,11 @@ _(all resolved)_
 
 ### Patches
 
-- [ ] [Review][Patch] `ProjectEntryUpdate.content: str | None` has no null-guard validator — `{"content": null}` passes Pydantic, sets NOT NULL DB column to None, triggers unhandled `IntegrityError` → HTTP 500 [`app/schemas/sections/projects.py`]
-- [ ] [Review][Patch] Router emits `"Section not found"` for all `ValueError` on 5 endpoints (get, update, delete, list_entries, update_entry) — when profile doesn't exist caller gets wrong 404 detail; `create` and `list` already emit `"Profile not found"` correctly [`app/apis/sections/projects.py:69-72,84-87,98-101,113-116,152-155`]
-- [ ] [Review][Patch] Fake `list_project_sections` sorts only by `display_order` — DB sorts by `(display_order, id)`; tie-break diverges in tests [`app/services/sections/projects_service.test.py:60-63`]
-- [ ] [Review][Patch] Fake `list_project_entries` is unordered — DB orders by `(display_order, id)` [`app/services/sections/projects_service.test.py:113-114`]
-- [ ] [Review][Patch] `create_project_entry` adapter missing postcondition `assert result.section_id == section_id` after entry create [`app/adapters/sqlite_database.py` create_project_entry]
+- [x] [Review][Patch] `ProjectEntryUpdate.content: str | None` has no null-guard validator — `{"content": null}` passes Pydantic, sets NOT NULL DB column to None, triggers unhandled `IntegrityError` → HTTP 500 [`app/schemas/sections/projects.py`]
+- [x] [Review][Patch] Router emits `"Section not found"` for all `ValueError` on 5 endpoints (get, update, delete, list_entries, update_entry) — when profile doesn't exist caller gets wrong 404 detail; `create` and `list` already emit `"Profile not found"` correctly [`app/apis/sections/projects.py:69-72,84-87,98-101,113-116,152-155`]
+- [x] [Review][Patch] Fake `list_project_sections` sorts only by `display_order` — DB sorts by `(display_order, id)`; tie-break diverges in tests [`app/services/sections/projects_service.test.py:60-63`]
+- [x] [Review][Patch] Fake `list_project_entries` is unordered — DB orders by `(display_order, id)` [`app/services/sections/projects_service.test.py:113-114`]
+- [x] [Review][Patch] `create_project_entry` adapter missing postcondition `assert result.section_id == section_id` after entry create [`app/adapters/sqlite_database.py` create_project_entry]
 
 ### Deferred
 
