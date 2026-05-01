@@ -774,7 +774,7 @@ class SQLiteDatabaseAdapter:
         result = await self._session.execute(
             select(ProjectSection)
             .where(ProjectSection.profile_id == profile_id)
-            .order_by(ProjectSection.display_order)
+            .order_by(ProjectSection.display_order, ProjectSection.id)
         )
         sections = list(result.scalars().all())
         validated = [self._project_section_to_read(s) for s in sections]
@@ -832,7 +832,10 @@ class SQLiteDatabaseAdapter:
             .options(selectinload(ProjectSection.entries))
             .where(ProjectSection.id == section.id, ProjectSection.profile_id == profile_id)
         )
-        return ProjectSectionRead.model_validate(refreshed.scalar_one())
+        section_row = refreshed.scalar_one_or_none()
+        if section_row is None:
+            return None
+        return ProjectSectionRead.model_validate(section_row)
 
     async def delete_project_section(self, profile_id: int, section_id: int) -> bool:
         assert profile_id > 0, "profile_id must be a positive integer"
@@ -895,7 +898,7 @@ class SQLiteDatabaseAdapter:
         result = await self._session.execute(
             select(ProjectEntry)
             .where(ProjectEntry.section_id == section_id)
-            .order_by(ProjectEntry.display_order)
+            .order_by(ProjectEntry.display_order, ProjectEntry.id)
         )
         entries = list(result.scalars().all())
         validated = [ProjectEntryRead.model_validate(e) for e in entries]
