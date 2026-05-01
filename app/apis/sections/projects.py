@@ -39,10 +39,8 @@ async def create_project_section(
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
         ) from None
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found"
-        ) from None
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
 
 
 @router.get("", response_model=list[ProjectSectionRead])
@@ -52,10 +50,8 @@ async def list_project_sections(
 ) -> list[ProjectSectionRead]:
     try:
         return await service.list_project_sections(profile_id)
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found"
-        ) from None
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
 
 
 @router.get("/{section_id}", response_model=ProjectSectionRead)
@@ -152,8 +148,6 @@ async def delete_entry(
 ) -> Response:
     try:
         await service.delete_entry(profile_id, section_id, entry_id)
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found"
-        ) from None
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from None
     return Response(status_code=status.HTTP_204_NO_CONTENT)
