@@ -1,6 +1,6 @@
 # Story 2.3: Projects Section CRUD
 
-Status: in-progress
+Status: review
 
 ## Story
 
@@ -474,18 +474,18 @@ _(all resolved)_
 
 ### Patches
 
-- [ ] [Review][Patch] Add `GET /{section_id}/entries` endpoint (list entries route) [`app/apis/sections/projects.py`]
-- [ ] [Review][Patch] Add `created_at`/`updated_at` timestamps to `ProjectEntry` model + new Alembic migration [`app/models/sections/projects.py`]
-- [ ] [Review][Patch] `update_entry`/`delete_entry` skip `profile_exists` check — inconsistent with all other service methods; `update_entry` and `delete_entry` go straight to section lookup without verifying the profile exists [`app/services/sections/projects_service.py:105,119`]
-- [ ] [Review][Patch] `ProjectSectionUpdate.title` is `str | None` — PATCH `{"title": null}` accepted by Pydantic, passed via `exclude_unset=True`, sets DB column to NULL, triggers NOT NULL violation on commit [`app/schemas/sections/projects.py:53`]
-- [ ] [Review][Patch] `update_project_section` re-fetch uses `scalar_one()` — if section deleted between commit and re-fetch, raises unhandled `NoResultFound` (500) instead of graceful 404 [`app/adapters/sqlite_database.py:269`]
-- [ ] [Review][Patch] `ProjectEntry` missing `back_populates` on entries relationship — `ProjectSection.entries` has no `back_populates='section'`; `ProjectEntry` has no `section` attribute [`app/models/sections/projects.py:736`]
-- [ ] [Review][Patch] `display_order` allows negative integers on both section and entry schemas — add `ge=0` [`app/schemas/sections/projects.py:21,62`]
-- [ ] [Review][Patch] `start_date`/`end_date` allow empty string `""` — add `min_length=1` [`app/schemas/sections/projects.py:18-19`]
-- [ ] [Review][Patch] Non-deterministic ordering when `display_order` values tie — add secondary `.order_by(..., ProjectSection.id)` / `.order_by(..., ProjectEntry.id)` [`app/adapters/sqlite_database.py:213,333`]
-- [ ] [Review][Patch] `organisation` allows empty string `""` — add `min_length=1` (same as W4 from 2.2 education) [`app/schemas/sections/projects.py:17`]
-- [ ] [Review][Patch] Test limit-exceeded tests directly inject entries with hardcoded IDs that may collide with IDs already consumed by section creation [`app/services/sections/projects_service.test.py:1210-1214`]
-- [ ] [Review][Patch] `migrations/env.py` inconsistent `noqa` comments — experience line had `noqa: F401` removed, projects line added it, education line has neither [`migrations/env.py:1442-1445`]
+- [x] [Review][Patch] Add `GET /{section_id}/entries` endpoint (list entries route) [`app/apis/sections/projects.py`]
+- [x] [Review][Patch] Add `created_at`/`updated_at` timestamps to `ProjectEntry` model + new Alembic migration [`app/models/sections/projects.py`]
+- [x] [Review][Patch] `update_entry`/`delete_entry` skip `profile_exists` check — inconsistent with all other service methods; `update_entry` and `delete_entry` go straight to section lookup without verifying the profile exists [`app/services/sections/projects_service.py:105,119`]
+- [x] [Review][Patch] `ProjectSectionUpdate.title` is `str | None` — PATCH `{"title": null}` accepted by Pydantic, passed via `exclude_unset=True`, sets DB column to NULL, triggers NOT NULL violation on commit [`app/schemas/sections/projects.py:53`]
+- [x] [Review][Patch] `update_project_section` re-fetch uses `scalar_one()` — if section deleted between commit and re-fetch, raises unhandled `NoResultFound` (500) instead of graceful 404 [`app/adapters/sqlite_database.py:269`]
+- [x] [Review][Patch] `ProjectEntry` missing `back_populates` on entries relationship — `ProjectSection.entries` has no `back_populates='section'`; `ProjectEntry` has no `section` attribute [`app/models/sections/projects.py:736`]
+- [x] [Review][Patch] `display_order` allows negative integers on both section and entry schemas — add `ge=0` [`app/schemas/sections/projects.py:21,62`]
+- [x] [Review][Patch] `start_date`/`end_date` allow empty string `""` — add `min_length=1` [`app/schemas/sections/projects.py:18-19`]
+- [x] [Review][Patch] Non-deterministic ordering when `display_order` values tie — add secondary `.order_by(..., ProjectSection.id)` / `.order_by(..., ProjectEntry.id)` [`app/adapters/sqlite_database.py:213,333`]
+- [x] [Review][Patch] `organisation` allows empty string `""` — add `min_length=1` (same as W4 from 2.2 education) [`app/schemas/sections/projects.py:17`]
+- [x] [Review][Patch] Test limit-exceeded tests directly inject entries with hardcoded IDs that may collide with IDs already consumed by section creation [`app/services/sections/projects_service.test.py:1210-1214`]
+- [x] [Review][Patch] `migrations/env.py` inconsistent `noqa` comments — experience line had `noqa: F401` removed, projects line added it, education line has neither [`migrations/env.py:1442-1445`]
 
 ### Deferred
 

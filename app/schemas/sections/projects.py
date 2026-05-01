@@ -14,7 +14,9 @@ from app.constants.limits import (
 
 class ProjectSectionCreate(BaseModel):
     title: str = Field(min_length=1, max_length=PROJECT_TITLE_MAX_LEN)
-    organisation: str | None = Field(default=None, min_length=1, max_length=PROJECT_ORGANISATION_MAX_LEN)
+    organisation: str | None = Field(
+        default=None, min_length=1, max_length=PROJECT_ORGANISATION_MAX_LEN
+    )
     start_date: str | None = Field(default=None, min_length=1, max_length=PROJECT_DATE_MAX_LEN)
     end_date: str | None = Field(default=None, min_length=1, max_length=PROJECT_DATE_MAX_LEN)
     is_enabled: bool = True
@@ -50,7 +52,9 @@ class ProjectSectionRead(BaseModel):
 
 class ProjectSectionUpdate(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=PROJECT_TITLE_MAX_LEN)
-    organisation: str | None = Field(default=None, min_length=1, max_length=PROJECT_ORGANISATION_MAX_LEN)
+    organisation: str | None = Field(
+        default=None, min_length=1, max_length=PROJECT_ORGANISATION_MAX_LEN
+    )
     start_date: str | None = Field(default=None, min_length=1, max_length=PROJECT_DATE_MAX_LEN)
     end_date: str | None = Field(default=None, min_length=1, max_length=PROJECT_DATE_MAX_LEN)
     is_enabled: bool | None = None
