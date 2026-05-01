@@ -102,6 +102,20 @@ async def delete_project_section(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
+@router.get("/{section_id}/entries", response_model=list[ProjectEntryRead])
+async def list_entries(
+    profile_id: ProfileId,
+    section_id: SectionId,
+    service: ServiceDep,
+) -> list[ProjectEntryRead]:
+    try:
+        return await service.list_entries(profile_id, section_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Section not found"
+        ) from None
+
+
 @router.post(
     "/{section_id}/entries",
     response_model=ProjectEntryRead,
