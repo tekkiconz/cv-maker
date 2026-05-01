@@ -516,3 +516,19 @@ _(all resolved)_
 - [x] [Review][Defer] SQLite `datetime('now')` server_default in migrations lacks timezone info — inconsistent with `DateTime(timezone=True)` column type — deferred, known SQLite limitation
 - [x] [Review][Defer] Two Alembic migrations for `project_entries` instead of one (AC5) — timestamps added as review patch; retroactive merge would break applied-migration checksums — deferred, not fixable without breaking Alembic state
 - [x] [Review][Defer] TOCTOU race on section/entry count checks — deferred, already in deferred-work.md W2 from this story
+
+## Third Review Findings (2026-05-01)
+
+> Reviewed 2026-05-01. All 3 layers: Blind Hunter + Edge Case Hunter + Acceptance Auditor. 9 dismissed (hallucinations/false positives).
+
+### Patches
+
+- [ ] [Review][Patch] `create_entry` router hardcodes `"Section not found"` for all `ValueError` — service raises `"Profile {id} not found"` when profile absent, client receives wrong 404 detail [`app/apis/sections/projects.py:136-139`]
+- [ ] [Review][Patch] `delete_entry` router hardcodes `"Entry not found"` for all `ValueError` — profile-not-found and section-not-found cases return misleading 404 detail; should use `str(exc)` like the other 5 entry/section endpoints [`app/apis/sections/projects.py:167-170`]
+
+### Deferred
+
+- [x] [Review][Defer] Two Alembic migrations for project tables (AC5 violation) — deferred, pre-existing per Re-Review findings; retroactive merge breaks checksums
+- [x] [Review][Defer] TOCTOU race on count+create — deferred, systemic pre-existing issue (W2 this story)
+- [x] [Review][Defer] `project_entries` timestamp migration adds `nullable=False` columns without server_default guarantee on old SQLite — deferred, pre-existing
+- [x] [Review][Defer] `display_order` has no upper-bound constraint on any project schema — deferred, pre-existing pattern across all section schemas
