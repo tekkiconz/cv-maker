@@ -512,3 +512,17 @@ def test_schema_update_title_null_rejected() -> None:
 def test_schema_update_display_order_negative_rejected() -> None:
     with pytest.raises(ValidationError):
         ProjectSectionUpdate(display_order=-1)
+
+
+async def test_update_entry_profile_not_found_raises(service: ProjectSectionService) -> None:
+    section = await service.create_project_section(1, ProjectSectionCreate(title="App"))
+    entry = await service.create_entry(1, section.id, ProjectEntryCreate(content="bullet"))
+    with pytest.raises(ValueError, match="Profile 99 not found"):
+        await service.update_entry(99, section.id, entry.id, ProjectEntryUpdate(content="new"))
+
+
+async def test_delete_entry_profile_not_found_raises(service: ProjectSectionService) -> None:
+    section = await service.create_project_section(1, ProjectSectionCreate(title="App"))
+    entry = await service.create_entry(1, section.id, ProjectEntryCreate(content="bullet"))
+    with pytest.raises(ValueError, match="Profile 99 not found"):
+        await service.delete_entry(99, section.id, entry.id)

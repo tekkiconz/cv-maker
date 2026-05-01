@@ -108,6 +108,8 @@ class ProjectSectionService:
         assert profile_id > 0, "profile_id must be a positive integer"
         assert section_id > 0, "section_id must be a positive integer"
         assert entry_id > 0, "entry_id must be a positive integer"
+        if not await self._db.profile_exists(profile_id):
+            raise ValueError(f"Profile {profile_id} not found")
         section = await self._db.get_project_section(profile_id, section_id)
         if section is None:
             raise ValueError(f"Section {section_id} not found")
@@ -120,6 +122,8 @@ class ProjectSectionService:
         assert profile_id > 0, "profile_id must be a positive integer"
         assert section_id > 0, "section_id must be a positive integer"
         assert entry_id > 0, "entry_id must be a positive integer"
+        if not await self._db.profile_exists(profile_id):
+            raise ValueError(f"Profile {profile_id} not found")
         section = await self._db.get_project_section(profile_id, section_id)
         if section is None:
             raise ValueError(f"Section {section_id} not found")
