@@ -58,7 +58,7 @@ class ProjectSectionUpdate(BaseModel):
 
     @field_validator("title")
     @classmethod
-    def title_must_not_be_null(cls, v: str | None) -> str | None:
+    def title_must_not_be_null(cls, v: str | None) -> str:
         if v is None:
             raise ValueError("title cannot be set to null")
         return v
