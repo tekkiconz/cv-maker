@@ -59,7 +59,7 @@ class FakeProjectSectionRepository:
     async def list_project_sections(self, profile_id: int) -> list[ProjectSectionRead]:
         return sorted(
             [s for s in self._sections if s.profile_id == profile_id],
-            key=lambda s: s.display_order,
+            key=lambda s: (s.display_order, s.id),
         )
 
     async def get_project_section(
@@ -111,7 +111,10 @@ class FakeProjectSectionRepository:
         return entry
 
     async def list_project_entries(self, section_id: int) -> list[ProjectEntryRead]:
-        return [e for e in self._entries if e.section_id == section_id]
+        return sorted(
+            [e for e in self._entries if e.section_id == section_id],
+            key=lambda e: (e.display_order, e.id),
+        )
 
     async def update_project_entry(
         self, section_id: int, entry_id: int, data: ProjectEntryUpdate
