@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 import pytest
+from pydantic import ValidationError
 
 from app.constants.limits import MAX_ENTRIES_PER_SECTION, MAX_SECTIONS_PER_PROFILE
 from app.exceptions import EntryLimitExceededError, SectionLimitExceededError
@@ -473,3 +474,41 @@ async def test_list_project_sections_entries_not_populated() -> None:
     sections = await svc.list_project_sections(1)
 
     assert sections[0].entries == []
+
+
+# --- Schema validation smoke tests ---
+
+
+def test_schema_organisation_empty_string_rejected() -> None:
+    with pytest.raises(ValidationError):
+        ProjectSectionCreate(title="App", organisation="")
+
+
+def test_schema_start_date_empty_string_rejected() -> None:
+    with pytest.raises(ValidationError):
+        ProjectSectionCreate(title="App", start_date="")
+
+
+def test_schema_end_date_empty_string_rejected() -> None:
+    with pytest.raises(ValidationError):
+        ProjectSectionCreate(title="App", end_date="")
+
+
+def test_schema_display_order_negative_rejected() -> None:
+    with pytest.raises(ValidationError):
+        ProjectSectionCreate(title="App", display_order=-1)
+
+
+def test_schema_entry_display_order_negative_rejected() -> None:
+    with pytest.raises(ValidationError):
+        ProjectEntryCreate(content="bullet", display_order=-1)
+
+
+def test_schema_update_title_null_rejected() -> None:
+    with pytest.raises(ValidationError):
+        ProjectSectionUpdate.model_validate({"title": None})
+
+
+def test_schema_update_display_order_negative_rejected() -> None:
+    with pytest.raises(ValidationError):
+        ProjectSectionUpdate(display_order=-1)
