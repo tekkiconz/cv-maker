@@ -891,7 +891,9 @@ class SQLiteDatabaseAdapter:
             raise
         await self._session.refresh(entry)
         assert entry.id is not None, "DB did not assign an id after insert"
-        return ProjectEntryRead.model_validate(entry)
+        result = ProjectEntryRead.model_validate(entry)
+        assert result.section_id == section_id, "returned entry section_id must match request"
+        return result
 
     async def list_project_entries(self, section_id: int) -> list[ProjectEntryRead]:
         assert section_id > 0, "section_id must be a positive integer"
