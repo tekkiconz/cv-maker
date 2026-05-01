@@ -492,3 +492,27 @@ _(all resolved)_
 - [x] [Review][Defer] `count_project_entries` and `list_project_entries` adapter methods take only `section_id` — no `profile_id` guard at adapter/protocol level; safe via service enforcement but unguarded for future direct callers [`app/adapters/sqlite_database.py:296,327`] — deferred, pre-existing pattern (same as W4 from 2.1)
 - [x] [Review][Defer] Concurrent TOCTOU race on section/entry count checks — `count_*` and `create_*` are separate DB round-trips with no locking; SQLite write serialization mitigates in practice [`app/services/sections/projects_service.py:26,84`] — deferred, pre-existing (same as W7 from 2.1, De1 from 1-5)
 - [x] [Review][Defer] IDOR — `profile_id` taken from URL path without ownership check; auth middleware is a stub per CLAUDE.md [`app/apis/sections/projects.py`] — deferred, systemic auth gap known
+
+## Re-Review Findings (2026-05-01)
+
+> Re-reviewed 2026-05-01. All 3 layers: Blind Hunter + Edge Case Hunter + Acceptance Auditor.
+
+### Patches
+
+- [ ] [Review][Patch] `ProjectEntryUpdate.content: str | None` has no null-guard validator — `{"content": null}` passes Pydantic, sets NOT NULL DB column to None, triggers unhandled `IntegrityError` → HTTP 500 [`app/schemas/sections/projects.py`]
+- [ ] [Review][Patch] Router emits `"Section not found"` for all `ValueError` on 5 endpoints (get, update, delete, list_entries, update_entry) — when profile doesn't exist caller gets wrong 404 detail; `create` and `list` already emit `"Profile not found"` correctly [`app/apis/sections/projects.py:69-72,84-87,98-101,113-116,152-155`]
+- [ ] [Review][Patch] Fake `list_project_sections` sorts only by `display_order` — DB sorts by `(display_order, id)`; tie-break diverges in tests [`app/services/sections/projects_service.test.py:60-63`]
+- [ ] [Review][Patch] Fake `list_project_entries` is unordered — DB orders by `(display_order, id)` [`app/services/sections/projects_service.test.py:113-114`]
+- [ ] [Review][Patch] `create_project_entry` adapter missing postcondition `assert result.section_id == section_id` after entry create [`app/adapters/sqlite_database.py` create_project_entry]
+
+### Deferred
+
+- [x] [Review][Defer] No SQLite `PRAGMA foreign_keys=ON` event listener — FK enforcement disabled by default; ORM cascade covers normal paths but raw SQL bypasses it — deferred, pre-existing systemic issue affecting all tables
+- [x] [Review][Defer] Migration `34a634dca953` missing `server_default` for `is_enabled`, `display_order`, `created_at`, `updated_at` on `project_sections` — direct SQL inserts without ORM defaults fail — deferred, migration already applied; can't modify applied migration file
+- [x] [Review][Defer] No router-level API tests for projects endpoints — deferred, pre-existing gap (education/experience also lack router tests; see W6 from 2.2)
+- [x] [Review][Defer] Empty PATCH body triggers unnecessary commit — deferred, pre-existing pattern across all section adapters (see De1 from 1-3)
+- [x] [Review][Defer] `_project_section_to_read` always returns `entries=[]` — latent misuse risk if applied to paths expecting populated entries — deferred, by design; same pattern as W2 from 2.2
+- [x] [Review][Defer] `assert` guards disabled by Python `-O` flag — deferred, pre-existing systemic issue across entire codebase
+- [x] [Review][Defer] SQLite `datetime('now')` server_default in migrations lacks timezone info — inconsistent with `DateTime(timezone=True)` column type — deferred, known SQLite limitation
+- [x] [Review][Defer] Two Alembic migrations for `project_entries` instead of one (AC5) — timestamps added as review patch; retroactive merge would break applied-migration checksums — deferred, not fixable without breaking Alembic state
+- [x] [Review][Defer] TOCTOU race on section/entry count checks — deferred, already in deferred-work.md W2 from this story

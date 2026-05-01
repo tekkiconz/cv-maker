@@ -51,3 +51,14 @@
 - **W1: `count_project_entries`/`list_project_entries` adapter methods take only `section_id` — no `profile_id` guard** [`app/adapters/sqlite_database.py:296,327`] — Safe via service enforcement today; unguarded for future direct callers. Pre-existing pattern (same as W4 from 2.1).
 - **W2: Concurrent TOCTOU race on section/entry count checks** [`app/services/sections/projects_service.py:26,84`] — `count_*` then `create_*` with no locking; SQLite write serialization mitigates. Pre-existing (same as W7 from 2.1, De1 from 1-5). Fix requires DB-level CHECK constraint or serialized transaction.
 - **W3: IDOR — `profile_id` from URL path trusted without ownership check** [`app/apis/sections/projects.py`] — Auth middleware is a stub per CLAUDE.md. Systemic gap; fix requires auth implementation story.
+
+## Deferred from: re-review of 2-3-projects-section-crud (2026-05-01)
+
+- **W4: No SQLite `PRAGMA foreign_keys=ON` event listener** [`app/adapters/factories.py`] — FK enforcement disabled by default; ORM cascade covers normal paths but raw SQL or bulk operations leave orphaned rows. Pre-existing systemic issue affecting all tables.
+- **W5: Migration `34a634dca953` missing `server_default` for NOT NULL columns** [`migrations/versions/34a634dca953_add_project_section_tables.py`] — `is_enabled`, `display_order`, `created_at`, `updated_at` on `project_sections` have no `server_default`; direct SQL inserts without ORM defaults fail with NOT NULL violation. Migration already applied; cannot change in-place.
+- **W6: No router-level API tests for projects** — `tests/api/` has no `test_projects.py`; HTTP routing, path-param validation, error mapping all untested at boundary. Pre-existing gap matching education/experience (W6 from 2.2).
+- **W7: Empty PATCH body triggers unnecessary DB commit** [`app/adapters/sqlite_database.py` update_project_section] — `model_dump(exclude_unset=True)` returns `{}`; loop is no-op but `commit()` still fires. Pre-existing pattern across all section adapters (De1 from 1-3).
+- **W8: `_project_section_to_read` latent misuse risk — always returns `entries=[]`** [`app/adapters/sqlite_database.py`] — Correct for list/create paths; silently wrong if applied to a path expecting populated entries. Same pattern as W2 from 2.2. Add docstring guard.
+- **W9: `assert` guards disabled by Python `-O` flag** — Tiger Style assertions stripped at `PYTHONOPTIMIZE=1`; invalid IDs bypass all guards. Pre-existing systemic issue across entire codebase.
+- **W10: SQLite `datetime('now')` server_default lacks timezone info** — `DateTime(timezone=True)` columns get naive datetimes from migration server defaults. Known SQLite limitation; rows inserted via ORM are fine.
+- **W11: Two Alembic migrations for project_entries timestamps instead of one** — AC5 requires one migration for both tables; timestamps were added as a review patch in a second revision. Cannot retroactively merge without breaking Alembic checksums on applied DBs.
