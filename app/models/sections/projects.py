@@ -41,7 +41,9 @@ class ProjectSection(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow, onupdate=_utcnow, nullable=False
     )
-    entries: Mapped[list[ProjectEntry]] = relationship("ProjectEntry", cascade="all, delete-orphan")
+    entries: Mapped[list[ProjectEntry]] = relationship(
+        "ProjectEntry", cascade="all, delete-orphan", back_populates="section"
+    )
     profile: Mapped[Profile] = relationship("Profile", back_populates="project_sections")
 
 
@@ -52,3 +54,10 @@ class ProjectEntry(Base):
     section_id: Mapped[int] = mapped_column(ForeignKey("project_sections.id"), nullable=False)
     content: Mapped[str] = mapped_column(String(PROJECT_ENTRY_CONTENT_MAX_LEN), nullable=False)
     display_order: Mapped[int] = mapped_column(default=0, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, onupdate=_utcnow, nullable=False
+    )
+    section: Mapped[ProjectSection] = relationship("ProjectSection", back_populates="entries")
