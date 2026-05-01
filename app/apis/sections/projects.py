@@ -66,9 +66,9 @@ async def get_project_section(
 ) -> ProjectSectionRead:
     try:
         return await service.get_project_section(profile_id, section_id)
-    except ValueError:
+    except ValueError as exc:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Section not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
         ) from None
 
 
@@ -81,9 +81,9 @@ async def update_project_section(
 ) -> ProjectSectionRead:
     try:
         return await service.update_project_section(profile_id, section_id, data)
-    except ValueError:
+    except ValueError as exc:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Section not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
         ) from None
 
 
@@ -95,9 +95,9 @@ async def delete_project_section(
 ) -> Response:
     try:
         await service.delete_project_section(profile_id, section_id)
-    except ValueError:
+    except ValueError as exc:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Section not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
         ) from None
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -110,9 +110,9 @@ async def list_entries(
 ) -> list[ProjectEntryRead]:
     try:
         return await service.list_entries(profile_id, section_id)
-    except ValueError:
+    except ValueError as exc:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Section not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
         ) from None
 
 
@@ -149,9 +149,9 @@ async def update_entry(
 ) -> ProjectEntryRead:
     try:
         return await service.update_entry(profile_id, section_id, entry_id, data)
-    except ValueError:
+    except ValueError as exc:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
         ) from None
 
 
