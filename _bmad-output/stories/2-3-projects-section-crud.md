@@ -1,6 +1,6 @@
 # Story 2.3: Projects Section CRUD
 
-Status: review
+Status: done
 
 ## Story
 
@@ -532,3 +532,18 @@ _(all resolved)_
 - [x] [Review][Defer] TOCTOU race on count+create — deferred, systemic pre-existing issue (W2 this story)
 - [x] [Review][Defer] `project_entries` timestamp migration adds `nullable=False` columns without server_default guarantee on old SQLite — deferred, pre-existing
 - [x] [Review][Defer] `display_order` has no upper-bound constraint on any project schema — deferred, pre-existing pattern across all section schemas
+
+## Fourth Review Findings (2026-05-01)
+
+> Reviewed 2026-05-01. All 3 layers: Blind Hunter + Edge Case Hunter + Acceptance Auditor. 7 dismissed (validator-unreachable false positive, asymmetric null-clearing by design, date-format free-form by design, assert-guards already deferred, return-type annotation technically correct, tautological assert noise, test-fake-behavior noise).
+
+### Patches
+
+- [x] [Review][Patch] `display_order: null` in PATCH body sets non-nullable column to None → IntegrityError 500 — `ProjectSectionUpdate` and `ProjectEntryUpdate` have `display_order: int | None` with no null-guard validator; same pattern as `title`/`content` null patches already applied; add validator rejecting explicit null [`app/schemas/sections/projects.py`]
+
+### Deferred
+
+- [x] [Review][Defer] Missing DB indexes on FK columns — `profile_id` on `project_sections` and `section_id` on `project_entries` have no explicit indexes; SQLite won't auto-create FK indexes; full table scan on every list/get/update/delete query; same pattern likely in experience/education migrations [`migrations/versions/34a634dca953_add_project_section_tables.py`] — deferred, pre-existing pattern
+- [x] [Review][Defer] `update_project_section` concurrent-delete race — after successful commit, re-fetch returns None if section deleted between commit and re-read; service raises ValueError → caller gets 404 for successful mutation; variant of existing TOCTOU defer [`app/adapters/sqlite_database.py`] — deferred, TOCTOU family
+- [x] [Review][Defer] `list_entries` double-query — loads full section with all entries via selectinload for ownership check, discards them, then issues separate `list_project_entries` query; two DB round-trips where one suffices [`app/services/sections/projects_service.py`] — deferred, pre-existing pattern
+- [x] [Review][Defer] `_utcnow` duplicated across model files — identical function in every section model file; should be in shared utility [`app/models/sections/projects.py`] — deferred, pre-existing pattern

@@ -62,3 +62,10 @@
 - **W9: `assert` guards disabled by Python `-O` flag** — Tiger Style assertions stripped at `PYTHONOPTIMIZE=1`; invalid IDs bypass all guards. Pre-existing systemic issue across entire codebase.
 - **W10: SQLite `datetime('now')` server_default lacks timezone info** — `DateTime(timezone=True)` columns get naive datetimes from migration server defaults. Known SQLite limitation; rows inserted via ORM are fine.
 - **W11: Two Alembic migrations for project_entries timestamps instead of one** — AC5 requires one migration for both tables; timestamps were added as a review patch in a second revision. Cannot retroactively merge without breaking Alembic checksums on applied DBs.
+
+## Deferred from: code review of 2-3-projects-section-crud fourth review (2026-05-01)
+
+- **W12: Missing DB indexes on FK columns** [`migrations/versions/34a634dca953_add_project_section_tables.py`] — `profile_id` on `project_sections` and `section_id` on `project_entries` have no explicit indexes; SQLite won't auto-create FK indexes; full table scan on every list/get/update/delete query. Same pattern in experience/education migrations (W3 from 2.2). Add explicit `op.create_index` in a future migration.
+- **W13: `update_project_section` concurrent-delete race — 404 for successful mutation** [`app/adapters/sqlite_database.py`] — After commit, re-fetch returns None if section was concurrently deleted; service raises ValueError → caller gets 404 even though the update succeeded. Variant of TOCTOU family (W2 this story). `session.refresh()` with eager-load options would resolve this.
+- **W14: `list_entries` double-query — loads full section with entries for ownership check, discards them, then issues separate `list_project_entries` query** [`app/services/sections/projects_service.py`] — Two DB round-trips where one would suffice. Pre-existing pattern across section services.
+- **W15: `_utcnow` duplicated across all model files** [`app/models/sections/projects.py`] — Identical function in every section model file. Extract to `app/models/base.py` or a shared utility in a future model cleanup.

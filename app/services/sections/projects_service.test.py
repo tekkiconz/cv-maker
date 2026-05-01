@@ -528,6 +528,11 @@ def test_schema_update_display_order_negative_rejected() -> None:
         ProjectSectionUpdate(display_order=-1)
 
 
+def test_schema_update_display_order_null_rejected() -> None:
+    with pytest.raises(ValidationError):
+        ProjectSectionUpdate.model_validate({"display_order": None})
+
+
 async def test_update_entry_profile_not_found_raises(service: ProjectSectionService) -> None:
     section = await service.create_project_section(1, ProjectSectionCreate(title="App"))
     entry = await service.create_entry(1, section.id, ProjectEntryCreate(content="bullet"))
@@ -545,3 +550,8 @@ async def test_delete_entry_profile_not_found_raises(service: ProjectSectionServ
 def test_schema_update_entry_content_null_rejected() -> None:
     with pytest.raises(ValidationError):
         ProjectEntryUpdate.model_validate({"content": None})
+
+
+def test_schema_update_entry_display_order_null_rejected() -> None:
+    with pytest.raises(ValidationError):
+        ProjectEntryUpdate.model_validate({"display_order": None})

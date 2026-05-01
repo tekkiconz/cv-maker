@@ -67,6 +67,13 @@ class ProjectSectionUpdate(BaseModel):
             raise ValueError("title cannot be set to null")
         return v
 
+    @field_validator("display_order")
+    @classmethod
+    def display_order_must_not_be_null(cls, v: int | None) -> int:
+        if v is None:
+            raise ValueError("display_order cannot be set to null")
+        return v
+
 
 class ProjectEntryCreate(BaseModel):
     content: str = Field(min_length=1, max_length=PROJECT_ENTRY_CONTENT_MAX_LEN)
@@ -84,4 +91,11 @@ class ProjectEntryUpdate(BaseModel):
     def content_must_not_be_null(cls, v: str | None) -> str:
         if v is None:
             raise ValueError("content cannot be set to null")
+        return v
+
+    @field_validator("display_order")
+    @classmethod
+    def display_order_must_not_be_null(cls, v: int | None) -> int:
+        if v is None:
+            raise ValueError("display_order cannot be set to null")
         return v
